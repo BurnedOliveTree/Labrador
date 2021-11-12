@@ -4,7 +4,13 @@ import sys
 
 class Server:
     def __init__(self, argv: list):
-        self.host = '127.0.0.1'
+        # python3 server.py [PORT_NUMBER] [IP_VERSION_NUMBER]
+        if len(argv) < 3 or int(argv[2]) != 6:
+            self.ip_version = 4
+            self.host = '127.0.0.1'
+        else:
+            self.ip_version = 6
+            self.host = '::1'
         self.buffer_size = 1024
         if len(argv) < 2:
             self.port = 8000
@@ -14,7 +20,7 @@ class Server:
 
     def listen(self):
         datagram_number = 1
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as new_socket:
+        with socket.socket(socket.AF_INET if self.ip_version == 4 else socket.AF_INET6, socket.SOCK_DGRAM) as new_socket:
             new_socket.bind((self.host, self.port))
             while True:
                 data, address = new_socket.recvfrom(self.buffer_size)
