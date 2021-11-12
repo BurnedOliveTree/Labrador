@@ -26,13 +26,15 @@ class Server:
                 data, address = new_socket.recvfrom(self.buffer_size)
                 print("Receiving data from: {}".format(address))
                 print("Received data: {}".format(data))
-
                 if not data:
                     print("ERROR: Received an empty datagram, exiting now...")
                     break
                 new_socket.sendto(data, address)
                 print('Sending datagram #', datagram_number)
                 datagram_number += 1
+                if data.decode('ascii') == 'QUIT':
+                    print("Received a signal to end, exiting now...")
+                    break
 
 
 if __name__ == "__main__":
