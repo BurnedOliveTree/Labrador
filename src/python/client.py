@@ -1,22 +1,20 @@
 import sys
-from Socket import SocketInterface
-from Host import Host
+from lib.Socket import SocketInterface
+from lib.Host import Host
 
-#TODO message > buffer size handle
 class Client(Host):
     def __init__(self, argv: list):
         # python3 client.py [IP_VERSION_NUMBER] [PORT_NUMBER] [ADDRESS]
         super().__init__(argv)
-
-        print("Will send data to ", self.host, ":", self.port)
         self.socket_interface = SocketInterface(self.host, self.port, self.ip_version)
+        print("Will send data to ", self.host, ":", self.port)
 
-    def connect(self):
+    def connect(self) -> None:
         data = self.get_user_data()
-        while (data != "QUIT"):
+        while data != "QUIT":
             self.socket_interface.send(data)
-            recived_data = self.socket_interface.read()
-            print('Received data: ', repr(recived_data))
+            received_data = self.socket_interface.read()
+            print('Received data: ', repr(received_data))
             data = self.get_user_data()
         else:
             self.socket_interface.send(data)
@@ -24,7 +22,7 @@ class Client(Host):
 
         print('Client finished')
 
-    def get_user_data(self):
+    def get_user_data(self) -> str:
         return input("Data: ")
 
 

@@ -1,25 +1,21 @@
 import sys
-from Socket import ServerSocketInterface
-from Host import Host
+from lib.Socket import ServerSocketInterface
+from lib.Host import Host
 
 class Server(Host):
     def __init__(self, argv: list):
-        super().__init__(argv)
         # python3 server.py [IP_VERSION_NUMBER] [PORT_NUMBER] [ADDRESS]
-        print("Listening on ", self.host, ":", self.port)
+        super().__init__(argv)
         self.socket_interface = ServerSocketInterface(self.host, self.port, self.ip_version)
-        self.datagram_number = 1
+        print("Listening on ", self.host, ":", self.port)
 
-    def listen(self):
-            # new_socket.bind((self.host, self.port))
-        received_data = None
+    def listen(self) -> None:
+        data = None
         self.socket_interface.bind()
-        while (received_data not in ["", "QUIT"]):
+        while data not in ["", "QUIT"]:
             data, host = self.socket_interface.read()
             print(f"Receiving data from: {host}\nReceived data: {data}")
             self.socket_interface.send(data, host)
-            print('Sending datagram #', self.datagram_number)
-            self.datagram_number += 1
         else:
             if data == "":
                 print("ERROR: Received an empty datagram, exiting now...")
