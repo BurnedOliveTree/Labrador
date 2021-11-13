@@ -12,7 +12,7 @@ class Socket:
         self.buffer_size = 1024
     
     def read(self):
-        return self.socket.recv(self.buffer_size)
+        return self.socket.recvfrom(self.buffer_size)
 
     def send(self, binary_stream: io.BytesIO, address=None):
         datagram_number = 0
@@ -43,15 +43,18 @@ class SocketInterface:
         self.binary_stream = io.BytesIO()
         self.socket = Socket(host, port, ip_version)
     
-    def read(self):
-        datagram = self.socket.read()
+    def read(self, ret_address: bool = False):
+        datagram, address = self.socket.read()
         data = datagram
         while not datagram.endswith(END_OF_DATA):
-            datagram = self.socket.read()
+            datagram, address = self.socket.read()
             data = data + datagram
         else:
             data = data.strip(END_OF_DATA)
-        return self.decode(data)
+        if ret_address:
+            return self.decode(data), address
+        else:
+            return self.decode(data)
 
     def send(self, data, address=None):
         data = self.encode(data)
@@ -81,9 +84,6 @@ class SocketInterface:
 class ServerSocket(Socket):
     def bind(self):
         self.socket.bind((self.host, self.port))
-    
-    def read(self):
-        return self.socket.recvfrom(self.buffer_size)
 
 
 class ServerSocketInterface(SocketInterface):
@@ -95,11 +95,4 @@ class ServerSocketInterface(SocketInterface):
         self.socket.bind()
     
     def read(self):
-        datagram, address = self.socket.read()
-        data = datagram
-        while not datagram.endswith(END_OF_DATA):
-            datagram, address = self.socket.read()
-            data = data + datagram
-        else:
-            data = data.strip(END_OF_DATA)
-        return self.decode(data), address
+        return super().read(True)
