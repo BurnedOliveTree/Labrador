@@ -9,7 +9,7 @@ class Socket:
         self.socket = socket.socket(socket.AF_INET if ip_version == 4 else socket.AF_INET6, socket.SOCK_DGRAM)
         self.host = host
         self.port = port
-        self.buffer_size = 1024
+        self.buffer_size = 32
     
     def read(self) -> None:
         return self.socket.recvfrom(self.buffer_size)

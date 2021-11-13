@@ -1,6 +1,6 @@
 import sys
-from Socket import SocketInterface
-from Host import Host
+from lib.Socket import SocketInterface
+from lib.Host import Host
 
 class Client(Host):
     def __init__(self, argv: list):
