@@ -26,8 +26,12 @@ class Socket:
     
     def __split_data(self, raw_data):
         data = [ raw_data[i:i+self.buffer_size] for i in range(0, len(raw_data) - self.buffer_size, self.buffer_size) ]
-        data.append(raw_data[-(self.buffer_size - (len(raw_data) % self.buffer_size)):])
-        data.append(END_OF_DATA)
+        last_data = raw_data[-(len(raw_data) % self.buffer_size):]
+        if self.buffer_size - (len(raw_data) % self.buffer_size) >= len(END_OF_DATA):
+            data.append(last_data + END_OF_DATA)
+        else:
+            data.append(last_data)
+            data.append(END_OF_DATA)
         return data
 
     def end_session(self):
@@ -42,7 +46,7 @@ class SocketInterface:
     def read(self):
         datagram = self.socket.read()
         data = datagram
-        while datagram != END_OF_DATA:
+        while not datagram.endswith(END_OF_DATA):
             datagram = self.socket.read()
             data = data + datagram
         else:
@@ -93,7 +97,7 @@ class ServerSocketInterface(SocketInterface):
     def read(self):
         datagram, address = self.socket.read()
         data = datagram
-        while datagram != END_OF_DATA:
+        while not datagram.endswith(END_OF_DATA):
             datagram, address = self.socket.read()
             data = data + datagram
         else:
