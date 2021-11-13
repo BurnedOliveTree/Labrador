@@ -9,7 +9,7 @@ class Server(Host):
         self.socket_interface = ServerSocketInterface(self.host, self.port, self.ip_version)
         print("Listening on ", self.host, ":", self.port)
 
-    def listen(self):
+    def listen(self) -> None:
         data = None
         self.socket_interface.bind()
         while data not in ["", "QUIT"]:

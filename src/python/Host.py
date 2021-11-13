@@ -5,7 +5,7 @@ class Host:
         self.host = argv[3] if len(argv) >= 4 else self.get_default_host_address(self.ip_version)
         self.port = int(argv[2]) if len(argv) >= 3 else 8000
     
-    def get_default_host_address(self, ip_version):
+    def get_default_host_address(self, ip_version: int) -> str:
         if ip_version == 4:
             return "127.0.0.1"
         elif ip_version == 6:

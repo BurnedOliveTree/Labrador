@@ -9,7 +9,7 @@ class Client(Host):
         self.socket_interface = SocketInterface(self.host, self.port, self.ip_version)
         print("Will send data to ", self.host, ":", self.port)
 
-    def connect(self):
+    def connect(self) -> None:
         data = self.get_user_data()
         while data != "QUIT":
             self.socket_interface.send(data)
@@ -22,7 +22,7 @@ class Client(Host):
 
         print('Client finished')
 
-    def get_user_data(self):
+    def get_user_data(self) -> str:
         return input("Data: ")
 
 
