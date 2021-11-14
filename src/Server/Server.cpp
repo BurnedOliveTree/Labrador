@@ -18,12 +18,11 @@ Server::Server(char* ip, int port){
         throw "Socket wasn't created";
     }
 
-    socklen_t len = sizeof( server );
-    if( bind( server_socket,( struct sockaddr * ) & server, len ) < 0 )
+    server_len = sizeof(server);
+    if( bind( server_socket,( struct sockaddr * ) & server, server_len ) < 0 )
     {
         throw "Socket wasn't binded";
     }
-    server_len = sizeof(server_socket);
 }
 
 Server::~Server(){
