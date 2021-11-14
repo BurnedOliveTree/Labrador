@@ -1,7 +1,6 @@
 import socket
 import io
 
-
 class Socket:
     def __init__(self, host: str, port: str, ip_version: int):
         self.socket = socket.socket(socket.AF_INET if ip_version == 4 else socket.AF_INET6, socket.SOCK_DGRAM)
