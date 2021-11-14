@@ -1,9 +1,6 @@
 import socket
 import io
 
-END_OF_DATA = b'\x00'
-
-
 class Socket:
     def __init__(self, host: str, port: str, ip_version: int):
         self.socket = socket.socket(socket.AF_INET if ip_version == 4 else socket.AF_INET6, socket.SOCK_DGRAM)
@@ -26,12 +23,7 @@ class Socket:
     
     def __split_data(self, raw_data: bytes) -> str:
         data = [ raw_data[i:i+self.buffer_size] for i in range(0, len(raw_data) - self.buffer_size, self.buffer_size) ]
-        last_data = raw_data[-(len(raw_data) % self.buffer_size):]
-        if self.buffer_size - (len(raw_data) % self.buffer_size) >= len(END_OF_DATA):
-            data.append(last_data + END_OF_DATA)
-        else:
-            data.append(last_data)
-            data.append(END_OF_DATA)
+        data.append(raw_data[-(len(raw_data) % self.buffer_size):])
         return data
 
     def end_session(self) -> None:
@@ -44,13 +36,7 @@ class SocketInterface:
         self.socket = Socket(host, port, ip_version)
     
     def read(self, ret_address: bool = False) -> str or tuple:
-        datagram, address = self.socket.read()
-        data = datagram
-        while not datagram.endswith(END_OF_DATA):
-            datagram, address = self.socket.read()
-            data = data + datagram
-        else:
-            data = data.strip(END_OF_DATA)
+        data, address = self.socket.read()
         if ret_address:
             return self.decode(data), address
         else:
