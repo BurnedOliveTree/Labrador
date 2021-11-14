@@ -10,9 +10,10 @@ int main(int argc, char* argv[])
     }
     std::vector<std::string> messages;
 
-    Server serv(ip);
+    Server serv(ip, 8000);
     while (true){
         std::string msg = serv.Receive();
+        serv.Send(std::string("Received: " + msg));
         messages.push_back(msg);
         if(serv.CheckQuit(msg)){
             break;
