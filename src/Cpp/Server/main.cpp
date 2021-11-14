@@ -2,15 +2,14 @@
 #include <iostream>
 #include <vector>
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
     char* ip = "127.0.0.1";
     if(argc > 1){
         ip = argv[1];
     }
     std::vector<std::string> messages;
 
-    Server serv(ip, 8000);
+    Server serv(ip);
     while (true){
         std::string msg = serv.Receive();
         serv.Send(std::string("Received: " + msg));
