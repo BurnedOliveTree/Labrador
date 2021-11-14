@@ -5,10 +5,14 @@
 #include <sys/socket.h>
 #include <string>
 #include <iostream>
+#include <memory>
 
 class Client{
-    struct sockaddr_in server ;
-    socklen_t client_len;
+    struct sockaddr_in server_4;
+    struct sockaddr_in6 server_6;
+    struct sockaddr* server ;
+
+    socklen_t server_len;
     char* server_ip;
     int server_port, client_socket;
     char buffer[4096];

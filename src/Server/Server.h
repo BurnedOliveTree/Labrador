@@ -7,7 +7,10 @@
 #include <iostream>
 
 class Server{
-    struct sockaddr_in server, curr_client;
+    struct sockaddr_in server_4;
+    struct sockaddr_in6 server_6;
+    struct sockaddr* server; 
+    struct sockaddr curr_client;
     socklen_t server_len;
     char* server_ip;
     int server_port, server_socket;
