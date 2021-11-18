@@ -1,6 +1,8 @@
+import logging
 import socket
 import io
 from numpy import byte
+import logging
 
 # Datagram structure:
 # D - data, S - size, F - flags, N - number of datagram
@@ -41,7 +43,7 @@ class Socket:
         data = self.__split_send_data(binary_stream.read())
         for datagram in data:
             self.socket.sendto(datagram, address)
-            print('Sending datagram #', datagram_number, ": ", datagram)    # TODO this needs to go
+            logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
             datagram_number += 1
     
     def __split_send_data(self, raw_data: bytes) -> str:

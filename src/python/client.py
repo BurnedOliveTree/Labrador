@@ -1,6 +1,7 @@
 import sys
 from lib.Socket import SocketInterface
 from lib.Host import Host
+import logging
 
 class Client(Host):
     def __init__(self, argv: list):
@@ -25,4 +26,5 @@ class Client(Host):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(filename='../../log/client.log', encoding='utf-8', level=logging.DEBUG)
     Client(sys.argv).connect()
