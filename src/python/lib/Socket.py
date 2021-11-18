@@ -48,29 +48,23 @@ class Socket:
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
             datagram_number += 1
     
+    def __create_datagram(self, raw_data, max_size, number, data_range: tuple, flag = 0x80):
+        datagram: bytearray = bytearray(b'')
+        foo = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
+        foo = [ byte(foo // 256), byte(foo % 256) ]
+        datagram.extend(foo)
+        datagram.extend(byte(flag | number))
+        datagram.extend(raw_data[data_range[0]:data_range[1]])
+        return bytes(datagram)
+    
     def __split_send_data(self, raw_data: bytes) -> str:
         if self.buffer_size >= 65536:
             raise ValueError("Given buffer size is too big")
         max_size = self.buffer_size - 3
         data = []
         for i in range(0, len(raw_data) - max_size, max_size):
-            datagram: bytearray = bytearray(b'')
-            foo = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
-            foo = [ byte(foo // 256), byte(foo % 256) ]
-            datagram.extend(foo)
-            datagram.extend(byte(0x80 | i))
-            datagram.extend(raw_data[i:i+max_size])
-            data.append(bytes(datagram))
-        datagram: bytearray = bytearray(b'')
-        foo = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
-        foo = [ byte(foo // 256), byte(foo % 256) ]
-        datagram.extend(foo)
-        if len(data) == 0:
-            datagram.extend(byte(0x7F | len(data)))
-        else:
-            datagram.extend(byte(0x80 | len(data)))
-        datagram.extend(raw_data[-(len(raw_data) % max_size):])
-        data.append(bytes(datagram))
+            data.append(self.__create_datagram(raw_data, max_size, i, (i, i + max_size)))
+        data.append(self.__create_datagram(raw_data, max_size, len(data), (-(len(raw_data) % max_size), None), 0x7F))
         if len(data) >= 128:
             raise ValueError("Given data was too big, resulting in too many datagrams")
         return data
