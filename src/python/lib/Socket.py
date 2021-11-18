@@ -4,6 +4,8 @@ import io
 from numpy import byte
 import logging
 
+import numpy
+
 # Datagram structure:
 # D - data, S - size, F - flags, N - number of datagram
 # SSSSSSSS
@@ -53,16 +55,16 @@ class Socket:
         data = []
         for i in range(0, len(raw_data) - max_size, max_size):
             datagram: bytearray = bytearray(b'')
-            if len(raw_data) // self.buffer_size <= 256:
-                datagram.extend(byte(0))
-            datagram.extend(byte(len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)))  # TODO this should be two bytes, but is one, so it will break for bigger messages
+            foo = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
+            foo = [ byte(foo // 256), byte(foo % 256) ]
+            datagram.extend(foo)
             datagram.extend(byte(0x80 | i))
             datagram.extend(raw_data[i:i+max_size])
             data.append(bytes(datagram))
         datagram: bytearray = bytearray(b'')
-        if len(raw_data) // self.buffer_size <= 256:
-            datagram.extend(byte(0x00))
-        datagram.extend(byte(len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)))  # TODO this should be two bytes, but is one, so it will break for bigger messages
+        foo = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
+        foo = [ byte(foo // 256), byte(foo % 256) ]
+        datagram.extend(foo)
         if len(data) == 0:
             datagram.extend(byte(0x7F | len(data)))
         else:
