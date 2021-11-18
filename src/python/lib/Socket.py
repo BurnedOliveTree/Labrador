@@ -48,7 +48,7 @@ class Socket:
     
     def __split_send_data(self, raw_data: bytes) -> str:
         if self.buffer_size >= 65536:
-            raise Exception("Buffer size is to big")                        # TODO specify exception type
+            raise ValueError("Given buffer size is too big")
         max_size = self.buffer_size - 3
         data = []
         for i in range(0, len(raw_data) - max_size, max_size):
@@ -70,7 +70,7 @@ class Socket:
         datagram.extend(raw_data[-(len(raw_data) % max_size):])
         data.append(bytes(datagram))
         if len(data) >= 128:
-            raise Exception("Too many packets")                             # TODO specify exception type
+            raise ValueError("Given data was too big, resulting in too many datagrams")
         return data
     
     def connect(self) -> None:
