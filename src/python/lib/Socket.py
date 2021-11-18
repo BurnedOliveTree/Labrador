@@ -2,10 +2,10 @@ import socket
 import io
 
 class Socket:
-    def __init__(self, host: str, port: str, ip_version: int):
-        self.socket = socket.socket(socket.AF_INET if ip_version == 4 else socket.AF_INET6, socket.SOCK_DGRAM)
-        self.host = host
-        self.port = port
+    def __init__(self, host: str, port: str):
+        self.socket: socket.socket = None
+        self.host: str = host
+        self.port: str = port
         self.buffer_size = 32
     
     def read(self) -> None:
@@ -18,22 +18,32 @@ class Socket:
         data = self.__split_data(binary_stream.read())
         for datagram in data:
             self.socket.sendto(datagram, address)
-            print('Sending datagram #', datagram_number, ": ", datagram)
+            print('Sending datagram #', datagram_number, ": ", datagram)    # TODO this needs to go
             datagram_number += 1
     
     def __split_data(self, raw_data: bytes) -> str:
         data = [ raw_data[i:i+self.buffer_size] for i in range(0, len(raw_data) - self.buffer_size, self.buffer_size) ]
         data.append(raw_data[-(len(raw_data) % self.buffer_size):])
         return data
+    
+    def connect(self) -> None:
+        self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
 
-    def end_session(self) -> None:
+    def disconnect(self) -> None:
         self.socket.close()
+    
+    def __enter__(self):
+        self.connect()
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.disconnect()
 
 
 class SocketInterface:
-    def __init__(self, host: str, port: str, ip_version: int):
-        self.binary_stream = io.BytesIO()
-        self.socket = Socket(host, port, ip_version)
+    def __init__(self, host: str, port: str):
+        self.binary_stream = None
+        self.socket = Socket(host, port)  # TODO do not construct here
     
     def read(self, ret_address: bool = False) -> str or tuple:
         data, address = self.socket.read()
@@ -61,10 +71,21 @@ class SocketInterface:
 
     def decode(self, data: bytes) -> str:
         return data.decode("ascii")
-    
-    def end_session(self) -> None:
+
+    def connect(self) -> None:
+        self.binary_stream = io.BytesIO()
+        self.socket.connect()
+
+    def disconnect(self) -> None:
         self.binary_stream.close()
-        self.socket.end_session()
+        self.socket.disconnect()
+    
+    def __enter__(self):
+        self.connect()
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.disconnect()
 
 
 class ServerSocket(Socket):
@@ -73,9 +94,9 @@ class ServerSocket(Socket):
 
 
 class ServerSocketInterface(SocketInterface):
-    def __init__(self, host, port, ip_version):
-        super().__init__(host, port, ip_version)
-        self.socket = ServerSocket(host, port, ip_version)
+    def __init__(self, host, port):
+        super().__init__(host, port)
+        self.socket = ServerSocket(host, port)  # TODO do not construct here
     
     def bind(self) -> None:
         self.socket.bind()
