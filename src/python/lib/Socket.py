@@ -1,10 +1,5 @@
-import logging
-import socket
-import io
+import io, logging, socket
 from numpy import byte
-import logging
-
-import numpy
 
 # Datagram structure:
 # D - data, S - size, F - flags, N - number of datagram
@@ -73,6 +68,7 @@ class Socket:
         self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
 
     def disconnect(self) -> None:
+        self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
     
     def __enter__(self):
