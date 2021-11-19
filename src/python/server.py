@@ -43,7 +43,7 @@ class Server(Host):
             
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='../../log/server.log', encoding='utf-8', level=logging.DEBUG)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename='../../log/server.log', encoding='utf-8', level=logging.DEBUG)
     server = Server(sys.argv)
     server_listening = Thread(target=server.listen)
     server_listening.start()
