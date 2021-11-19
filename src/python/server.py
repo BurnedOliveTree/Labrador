@@ -17,21 +17,19 @@ class Server(Host):
         with ServerSocketInterface(self.host, self.port) as self.socket:
             self.socket.bind()
             print("Listening on ", self.host, ":", self.port)
-            while data not in ["", "QUIT"]:
+            while not self.is_quit_sent:
                 data, host, is_struct = self.socket.read()
                 print(f"Receiving data from: {host}\nReceived data: {data}")
                 self.socket.send(data, host, is_struct)
+                if data == 'QUIT':
+                    self.is_quit_sent = True
             else:
-                self.is_quit_sent = True
-                if data == "":
-                    print("ERROR: Received an empty datagram, exiting now...")
-                elif data == 'QUIT':
-                    print("Received a signal to end, exiting now...")
+                print("Received a signal to end, exiting now...")
     
     def __on_release(self, key):
         if key == Key.esc:
             self.socket.send("QUIT")
-            return False
+            self.is_quit_sent = True
         return not self.is_quit_sent
     
     def __on_sig_int(self, signum, frame):
