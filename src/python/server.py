@@ -1,4 +1,4 @@
-import logging, sys
+import logging, signal, sys
 from lib.Socket import ServerSocketInterface
 from lib.Host import Host
 from pynput.keyboard import Key, Listener
@@ -10,6 +10,7 @@ class Server(Host):
         super().__init__(argv)
         self.socket = None
         self.is_quit_sent = False
+        signal.signal(signal.SIGINT, self.__on_sig_int)
 
     def listen(self) -> None:
         data = None
@@ -32,6 +33,11 @@ class Server(Host):
             self.socket.send("QUIT")
             return False
         return not self.is_quit_sent
+    
+    def __on_sig_int(self, signum, frame):
+        signal.signal(signum, signal.SIG_IGN)
+        self.socket.send("QUIT")
+        self.is_quit_sent = True
         
     def get_admin_command(self):
         with Listener(on_release=self.__on_release) as listener:
