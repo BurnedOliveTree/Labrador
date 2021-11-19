@@ -1,5 +1,6 @@
 import io, logging, socket
 from numpy import byte
+import struct
 
 # Datagram structure:
 # D - data, S - size, F - flags, N - number of datagram
@@ -65,11 +66,14 @@ class Socket:
         return data
     
     def connect(self) -> None:
-        self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
+        if not self.socket:
+            self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
 
     def disconnect(self) -> None:
-        self.socket.shutdown(socket.SHUT_RDWR)
-        self.socket.close()
+        if self.socket:
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+            self.socket = None
     
     def __enter__(self):
         self.connect()
@@ -86,13 +90,22 @@ class SocketInterface:
     
     def read(self, ret_address: bool = False) -> str or tuple:
         data, address = self.socket.read()
-        if ret_address:
-            return self.decode(data), address
+        if data[0] == 1:
+            is_struct = True
+            decoded_data = struct.unpack('hhl', data[1:])       # TODO this needs to not be hardcoded
         else:
-            return self.decode(data)
+            is_struct = False
+            decoded_data = self.decode(data[1:])
+        if ret_address:
+            return decoded_data, address, is_struct
+        else:
+            return decoded_data
 
-    def send(self, data: str, address: str = None) -> None:
-        encoded_data = self.encode(data)
+    def send(self, data: str, address: str = None, is_struct = False) -> None:
+        if is_struct:
+            encoded_data = b'\1' + struct.pack('hhl', 1, 2, 3)  # TODO this needs to not be hardcoded
+        else:
+            encoded_data = b'\0' + self.encode(data)
         self.__write_to_binary_stream(encoded_data)
         self.socket.send(self.binary_stream, address)
         self.__clear_binary_stream()

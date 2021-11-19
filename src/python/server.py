@@ -22,9 +22,9 @@ class Server(Host):
             self.socket.bind()
             print("Listening on ", self.host, ":", self.port)
             while data not in ["", "QUIT"]:
-                data, host = self.socket.read()
+                data, host, is_struct = self.socket.read()
                 print(f"Receiving data from: {host}\nReceived data: {data}")
-                self.socket.send(data, host)
+                self.socket.send(data, host, is_struct)
             else:
                 if data == "":
                     print("ERROR: Received an empty datagram, exiting now...")
