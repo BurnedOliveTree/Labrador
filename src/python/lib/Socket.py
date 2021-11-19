@@ -1,5 +1,4 @@
-import socket
-import io
+import socket, io
 
 class Socket:
     def __init__(self, host: str, port: str):
@@ -30,6 +29,7 @@ class Socket:
         self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
 
     def disconnect(self) -> None:
+        self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
     
     def __enter__(self):
