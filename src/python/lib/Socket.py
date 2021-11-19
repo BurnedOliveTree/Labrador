@@ -71,7 +71,6 @@ class Socket:
 
     def disconnect(self) -> None:
         if self.socket:
-            # self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
             self.socket = None
     
