@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from subprocess import check_output
 
 
 class Host:
@@ -22,3 +23,6 @@ class Host:
             return "127.0.0.1"
         elif ip_version == 6:
             return "::1"
+
+def get_project_root() -> str:
+    return check_output(['git', 'rev-parse', '--show-toplevel']).decode('ascii').strip()

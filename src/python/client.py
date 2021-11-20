@@ -1,6 +1,6 @@
 import sys
 from lib.Socket import SocketInterface, Socket
-from lib.Host import Host
+from lib.Host import Host, get_project_root
 import logging
 
 class Client(Host):
@@ -15,7 +15,7 @@ class Client(Host):
             print("Will send data to ", self.host, ":", self.port)
             data = self.get_user_data()
             while data != "QUIT":
-                socket.send(data, is_struct=True)           # TODO this needs to not be hardcoded
+                socket.send(data)           # TODO this needs to not be hardcoded
                 received_data = socket.read()
                 print('Received data: ', repr(received_data))
                 data = self.get_user_data()
@@ -28,5 +28,10 @@ class Client(Host):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename='log/client.log', level=logging.DEBUG)
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        filename=get_project_root()+'/log/client.log',
+        level=logging.DEBUG
+    )
     Client(sys.argv).connect()

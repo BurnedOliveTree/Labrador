@@ -1,6 +1,6 @@
 import logging, signal, sys
 from lib.Socket import ServerSocketInterface, ServerSocket
-from lib.Host import Host
+from lib.Host import Host, get_project_root
 from pynput.keyboard import Key, Listener
 from threading import Thread
 
@@ -46,7 +46,12 @@ class Server(Host):
             
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename='log/server.log', level=logging.DEBUG)
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        filename=get_project_root()+'/log/server.log',
+        level=logging.DEBUG
+    )
     server = Server(sys.argv)
     server_listening = Thread(target=server.listen)
     server_listening.start()
