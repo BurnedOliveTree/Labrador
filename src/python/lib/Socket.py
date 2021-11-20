@@ -2,6 +2,7 @@ import io, logging, socket
 from numpy import byte
 import struct
 
+socket.setdefaulttimeout(10)
 # Datagram structure:
 # D - data, S - size, F - flags, N - number of datagram
 # SSSSSSSS
@@ -15,15 +16,22 @@ class Socket:
         self.host: str = host
         self.port: str = port
         self.buffer_size = 32
+        self.timeout = 10
     
     def read(self) -> None:
+        address = None
         size, current_size = 1, 0
         data_map: dict = {}
         while current_size < size:
-            datagram, address = self.socket.recvfrom(self.buffer_size)
-            data, size, _, number = self.__split_read_data(datagram)
-            data_map[number] = data
-            current_size += 1
+            try: 
+                datagram, address = self.socket.recvfrom(self.buffer_size)
+                data, size, _, number = self.__split_read_data(datagram)
+                data_map[number] = data
+                current_size += 1
+            except socket.error as socketerror:
+                logging.debug(f'Timeout reached! Error: {socketerror}')
+                current_size += 1
+
         data = b''.join(val for (_, val) in data_map.items())
         return data, address
     
@@ -68,6 +76,7 @@ class Socket:
     def connect(self) -> None:
         if not self.socket:
             self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
+            self.socket.settimeout(self.timeout)
 
     def disconnect(self) -> None:
         if self.socket:
