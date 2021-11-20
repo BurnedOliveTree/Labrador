@@ -1,5 +1,5 @@
 import logging, signal, sys
-from lib.Socket import ServerSocketInterface
+from lib.Socket import ServerSocketInterface, ServerSocket
 from lib.Host import Host
 from pynput.keyboard import Key, Listener
 from threading import Thread
@@ -14,7 +14,8 @@ class Server(Host):
 
     def listen(self) -> None:
         data = None
-        with ServerSocketInterface(self.host, self.port) as self.socket:
+        socket = ServerSocket(self.host, self.port)
+        with ServerSocketInterface(socket) as self.socket:
             self.socket.bind()
             print("Listening on ", self.host, ":", self.port)
             while not self.is_quit_sent:
@@ -25,10 +26,12 @@ class Server(Host):
                     self.is_quit_sent = True
             else:
                 print("Received a signal to end, exiting now...")
+        self.socket = None
     
     def __on_release(self, key):
         if key == Key.esc:
-            self.socket.send("QUIT")
+            if self.socket:
+                self.socket.send("QUIT")
             self.is_quit_sent = True
         return not self.is_quit_sent
     
@@ -43,7 +46,7 @@ class Server(Host):
             
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename='../../log/server.log', encoding='utf-8', level=logging.DEBUG)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename='log/server.log', level=logging.DEBUG)
     server = Server(sys.argv)
     server_listening = Thread(target=server.listen)
     server_listening.start()

@@ -1,5 +1,5 @@
 import sys
-from lib.Socket import SocketInterface
+from lib.Socket import SocketInterface, Socket
 from lib.Host import Host
 import logging
 
@@ -9,7 +9,9 @@ class Client(Host):
         super().__init__(argv)
 
     def connect(self) -> None:
-        with SocketInterface(self.host, self.port) as socket:
+        socket = Socket(self.host, self.port)
+        received_data = None
+        with SocketInterface(socket) as socket:
             print("Will send data to ", self.host, ":", self.port)
             data = self.get_user_data()
             while data != "QUIT":
@@ -26,5 +28,5 @@ class Client(Host):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename='../../log/client.log', encoding='utf-8', level=logging.DEBUG)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename='log/client.log', level=logging.DEBUG)
     Client(sys.argv).connect()

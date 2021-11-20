@@ -46,7 +46,7 @@ class Socket:
     
     def __create_datagram(self, raw_data, max_size, number, data_range: tuple, flag = 0x80):
         datagram: bytearray = bytearray(b'')
-        foo = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
+        foo = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0) # change name
         foo = [ byte(foo // 256), byte(foo % 256) ]
         datagram.extend(foo)
         datagram.extend(byte(flag | number))
@@ -83,22 +83,24 @@ class Socket:
 
 
 class SocketInterface:
-    def __init__(self, host: str, port: str):
+    def __init__(self, socket):
         self.binary_stream = None
-        self.socket = Socket(host, port)  # TODO do not construct here
+        self.socket = socket
     
     def read(self, ret_address: bool = False) -> str or tuple:
         data, address = self.socket.read()
-        if data[0] == 1:
-            is_struct = True
-            decoded_data = struct.unpack('hhl', data[1:])       # TODO this needs to not be hardcoded
-        else:
-            is_struct = False
-            decoded_data = self.decode(data[1:])
-        if ret_address:
-            return decoded_data, address, is_struct
-        else:
-            return decoded_data
+        if data:
+            if data[0] == 1:
+                is_struct = True
+                decoded_data = struct.unpack('hhl', data[1:])       # TODO this needs to not be hardcoded
+            else:
+                is_struct = False
+                decoded_data = self.decode(data[1:])
+            if ret_address:
+                return decoded_data, address, is_struct
+            else:
+                return decoded_data
+        raise ValueError('Data not received')
 
     def send(self, data: str, address: str = None, is_struct = False) -> None:
         if is_struct:
@@ -145,9 +147,9 @@ class ServerSocket(Socket):
 
 
 class ServerSocketInterface(SocketInterface):
-    def __init__(self, host, port):
-        super().__init__(host, port)
-        self.socket = ServerSocket(host, port)  # TODO do not construct here
+    def __init__(self, socket):
+        super().__init__(socket)
+        self.socket = socket
     
     def bind(self) -> None:
         self.socket.bind()
