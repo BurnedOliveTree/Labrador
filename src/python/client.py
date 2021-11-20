@@ -1,5 +1,6 @@
 import sys
-from lib.Socket import SocketInterface, Socket
+from lib.SocketInterface import SocketInterface
+from lib.Socket import Socket
 from lib.Host import Host, get_project_root
 import logging
 
