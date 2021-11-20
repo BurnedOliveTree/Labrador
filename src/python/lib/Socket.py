@@ -15,8 +15,10 @@ class Socket:
         self.host: str = host
         self.port: str = port
         self.buffer_size = 32
+        self.timeout = 10
     
     def read(self) -> None:
+        address = None
         size, current_size = 1, 0
         data_map: dict = {}
         while current_size < size:
@@ -75,7 +77,7 @@ class Socket:
     def connect(self) -> None:
         if not self.socket:
             self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
-            self.socket.settimeout(10.0)
+            self.socket.settimeout(self.timeout)
 
     def disconnect(self) -> None:
         if self.socket:
