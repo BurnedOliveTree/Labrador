@@ -20,10 +20,17 @@ class Socket:
         size, current_size = 1, 0
         data_map: dict = {}
         while current_size < size:
-            datagram, address = self.socket.recvfrom(self.buffer_size)
-            data, size, _, number = self.__split_read_data(datagram)
-            data_map[number] = data
-            current_size += 1
+            try:
+                datagram, address = self.socket.recvfrom(self.buffer_size)
+                data, size, _, number = self.__split_read_data(datagram)
+                data_map[number] = data
+                current_size += 1
+            except socket.error:
+                if len(data_map) > 0:
+                    logging.warn("Socket timed out, data is probably corrupted")
+                    current_size += 1
+                else:
+                    size, current_size = 1, 0
         data = b''.join(val for (_, val) in data_map.items())
         return data, address
     
@@ -46,9 +53,9 @@ class Socket:
     
     def __create_datagram(self, raw_data, max_size, number, data_range: tuple, flag = 0x80):
         datagram: bytearray = bytearray(b'')
-        foo = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0) # change name
-        foo = [ byte(foo // 256), byte(foo % 256) ]
-        datagram.extend(foo)
+        datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
+        datagram_amount = [ byte(datagram_amount // 256), byte(datagram_amount % 256) ]
+        datagram.extend(datagram_amount)
         datagram.extend(byte(flag | number))
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
@@ -68,6 +75,7 @@ class Socket:
     def connect(self) -> None:
         if not self.socket:
             self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
+            self.socket.settimeout(10.0)
 
     def disconnect(self) -> None:
         if self.socket:
