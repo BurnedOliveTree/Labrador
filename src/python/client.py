@@ -15,7 +15,7 @@ class Client(Host):
             print("Will send data to ", self.host, ":", self.port)
             data = self.get_user_data()
             while data != "QUIT":
-                socket.send(data)           # TODO this needs to not be hardcoded
+                socket.send(data, is_struct=True)           # TODO this needs to not be hardcoded
                 received_data = socket.read()
                 print('Received data: ', repr(received_data))
                 data = self.get_user_data()
