@@ -3,11 +3,11 @@ from numpy import byte
 import struct
 
 # Datagram structure:
-# D - data, S - size, F - flags, N - number of datagram
-# SSSSSSSS
-# SSSSSSSS
+# D - data, A - amount of all datagrams for this data, F - flags, N - number of datagram
+# AAAAAAAA
+# AAAAAAAA
 # FNNNNNNN
-# DDDDDDDD
+# NNNNNNNN
 # DDDDD...
 class Socket:
     def __init__(self, host: str, port: str):
@@ -36,12 +36,12 @@ class Socket:
         data = b''.join(val for (_, val) in data_map.items())
         return data, address
     
-    def __split_read_data(self, datagram):
-        header = datagram[:3]
+    def __split_read_data(self, datagram: bytes):
+        header = datagram[:4]
         size = int(header[0] * (2 ** 8) + header[1])
         is_complex = bool(header[2] << 7)
-        number = int(header[2] << 1)
-        return datagram[3:], size, is_complex, number
+        number = int((header[2] & 0x7F) * (2 ** 8) + header[3])
+        return datagram[4:], size, is_complex, number
 
     def send(self, binary_stream: io.BytesIO, address: str = None) -> None:
         datagram_number = 0
@@ -53,24 +53,23 @@ class Socket:
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
             datagram_number += 1
     
-    def __create_datagram(self, raw_data, max_size, number, data_range: tuple, flag = 0x80):
+    def __create_datagram(self, raw_data, amount, number, data_range: tuple, flag = 0x80):
         datagram: bytearray = bytearray(b'')
-        datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
-        datagram_amount = [ byte(datagram_amount // 256), byte(datagram_amount % 256) ]
-        datagram.extend(datagram_amount)
-        datagram.extend(byte(flag | number))
+        datagram.extend([ byte(amount // 256), byte(amount % 256) ])
+        datagram.extend([ byte(flag | (number // 256)), byte(number % 256) ])
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
     def __split_send_data(self, raw_data: bytes) -> str:
         if self.buffer_size >= 65536:
             raise ValueError("Given buffer size is too big")
-        max_size = self.buffer_size - 3
+        max_size = self.buffer_size - 4
         data = []
+        datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
         for i in range(0, len(raw_data) - max_size, max_size):
-            data.append(self.__create_datagram(raw_data, max_size, i, (i, i + max_size)))
-        data.append(self.__create_datagram(raw_data, max_size, len(data), (-(len(raw_data) % max_size), None), 0x7F))
-        if len(data) >= 128:
+            data.append(self.__create_datagram(raw_data, datagram_amount, i, (i, i + max_size)))
+        data.append(self.__create_datagram(raw_data, datagram_amount, len(data), (-(len(raw_data) % max_size), None), 0x7F))
+        if len(data) >= 32768:
             raise ValueError("Given data was too big, resulting in too many datagrams")
         return data
     
