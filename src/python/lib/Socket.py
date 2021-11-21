@@ -52,7 +52,7 @@ class Socket:
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
             datagram_number += 1
     
-    def __create_datagram(self, raw_data, amount, number, data_range: tuple, flag = 0x80):
+    def __create_datagram(self, raw_data, amount, number, data_range: tuple, flag = 0x00):
         datagram: bytearray = bytearray(b'')
         datagram.extend([ byte(amount // 256), byte(amount % 256) ])
         datagram.extend([ byte(flag | (number // 256)), byte(number % 256) ])
@@ -62,14 +62,14 @@ class Socket:
     def __split_send_data(self, raw_data: bytes) -> str:
         if self.buffer_size >= 65536:
             raise ValueError("Given buffer size is too big")
-        max_size = self.buffer_size - 4
         data = []
+        max_size = self.buffer_size - 4
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
-        for i in range(0, len(raw_data) - max_size, max_size):
-            data.append(self.__create_datagram(raw_data, datagram_amount, i, (i, i + max_size)))
-        data.append(self.__create_datagram(raw_data, datagram_amount, len(data), (-(len(raw_data) % max_size), None), 0x7F))
-        if len(data) >= 32768:
+        if datagram_amount >= 32768:
             raise ValueError("Given data was too big, resulting in too many datagrams")
+        for i in range(0, datagram_amount - 1):
+            data.append(self.__create_datagram(raw_data, datagram_amount, i, (max_size * i, max_size * (i + 1))))
+        data.append(self.__create_datagram(raw_data, datagram_amount, datagram_amount - 1, (-(len(raw_data) % max_size), None)))
         return data
     
     def connect(self) -> None:
