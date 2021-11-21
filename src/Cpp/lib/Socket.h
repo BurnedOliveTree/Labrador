@@ -7,7 +7,7 @@
 #include <iostream>
 #include <memory>
 
-class Client{
+class Socket{
     struct sockaddr_in server_4;
     struct sockaddr_in6 server_6;
     struct sockaddr* server ;
@@ -17,8 +17,9 @@ class Client{
     int server_port, client_socket;
     char buffer[4096];
 public:
-    Client(char* ip = "127.0.0.1" , int port = 2137);
-    ~Client();
-    void Send(std::string msg);
+    Socket(char* ip = "127.0.0.1" , int port = 8000);
+    ~Socket();
+    void Bind();
+    void Send(std::string);
     std::string Receive();
 };

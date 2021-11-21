@@ -1,6 +1,6 @@
-#include "Client.h"
+#include "Socket.h"
 
-Client::Client(char* ip, int port){
+Socket::Socket(char* ip, int port){
     server_ip = ip;
     server_port = port;
     if (std::string(ip).find('.') != std::string::npos){
@@ -10,13 +10,13 @@ Client::Client(char* ip, int port){
 
         if( inet_pton( AF_INET, server_ip, & server_4.sin_addr ) <= 0 )
         {
-            throw "inet_pton didn't convert IP";
+            std::cout << "inet_pton didn't convert IP";
         }
     
         client_socket = socket( AF_INET, SOCK_DGRAM, 0 );
         if(( client_socket ) < 0 )
         {
-            throw "Socket wasn't created";
+            std::cout << "Socket wasn't created";
         }
         server_len = sizeof(server_4);
         server = (struct sockaddr*) &server_4;
@@ -28,36 +28,43 @@ Client::Client(char* ip, int port){
 
         if( inet_pton( AF_INET6, server_ip, & server_6.sin6_addr ) <= 0 )
         {
-            throw "inet_pton didn't convert IP";
+            std::cout << "inet_pton didn't convert IP";
         }
     
         client_socket = socket( AF_INET6, SOCK_DGRAM, 0 );
         if(( client_socket ) < 0 )
         {
-            throw "Socket wasn't created";
+            std::cout << "Socket wasn't created";
         }
         server_len = sizeof(server_6);
         server = (struct sockaddr*) &server_6;
     }
 }
 
-Client::~Client(){
+Socket::~Socket(){
     shutdown(client_socket, SHUT_RDWR);
 }
 
-void Client::Send(std::string msg){
+void Socket::Bind(){
+    if( bind( client_socket, server, server_len ) < 0 )
+    {
+        std::cout << "Socket wasn't binded";
+    }
+}
+
+void Socket::Send(std::string msg){
     strncpy( buffer, msg.c_str(), sizeof(buffer));
     if(sendto(client_socket, buffer, strlen(buffer), 0, server, server_len ) < 0 )
         {
-            throw "Couldn't send message to server";
+            std::cout << "Couldn't send message to server";
         }
 }
 
-std::string Client::Receive(){
+std::string Socket::Receive(){
     memset(buffer, 0, sizeof(buffer));
     if( recvfrom(client_socket, buffer, sizeof(buffer), 0, server, &server_len ) < 0 )
         {   
-            throw "Couldn't receive message from server";
+            std::cout << "Couldn't receive message from server";
         }
     std::string msg(buffer);
     std::cout << "Received message of length " << msg.length() << std::endl;
