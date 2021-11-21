@@ -1,6 +1,6 @@
 #include "Client.h"
 
-Client::Client(char* ip, int port):sock(ip,port, false){
+Client::Client(std::string ip, int port):sock(ip,port, false){
 }
 
 void Client::Send(std::string msg){

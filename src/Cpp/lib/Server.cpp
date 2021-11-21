@@ -1,6 +1,6 @@
 #include "Server.h"
 
-Server::Server(char* ip, int port): sock(ip,port,true){
+Server::Server(std::string ip, int port): sock(ip,port,true){
     sock.Bind();
 }
 

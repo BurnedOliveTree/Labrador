@@ -13,7 +13,7 @@
 class Client{
     Socket sock;
 public:
-    Client(char* ip = "127.0.0.1" , int port = 8000);
+    Client(std::string ip, int port);
     void Send(std::string msg);
     std::string Receive();
 };
