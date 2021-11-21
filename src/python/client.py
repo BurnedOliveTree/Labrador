@@ -32,7 +32,7 @@ class Client(Host):
         return input("Data: ")
     
     def get_input_type(self) -> bool:
-        input_type = input("Choose type of sending data: \n 1.string\n 2.struct\nChoise: ")
+        input_type = input("Choose type of sending data: \n 1.string\n 2.struct\nYour choice: ")
         try:
             option = int(input_type)
             if option == 2:
