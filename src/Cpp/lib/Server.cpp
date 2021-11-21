@@ -1,16 +1,15 @@
 #include "Server.h"
 
-Server::Server(char* ip, int port){
-    socket = Socket(ip,port);
-    socket.Bind();
+Server::Server(char* ip, int port): sock(ip,port,true){
+    sock.Bind();
 }
 
 void Server::Send(std::string msg){
-    socket.Send(msg);
+    sock.Send(msg);
 }
 
 std::string Server::Receive(){
-    return socket.Receive();
+    return sock.Receive();
 }
 
 bool Server::CheckQuit(std::string msg){

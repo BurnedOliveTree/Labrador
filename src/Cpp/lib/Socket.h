@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
@@ -8,16 +10,19 @@
 #include <memory>
 
 class Socket{
-    struct sockaddr_in server_4;
-    struct sockaddr_in6 server_6;
-    struct sockaddr* server ;
+    struct sockaddr_in desc_4;
+    struct sockaddr_in6 desc_6;
+    struct sockaddr* self_addr ;
+    struct sockaddr dest_addr ;
+    bool is_server;
 
-    socklen_t server_len;
-    char* server_ip;
-    int server_port, client_socket;
+    socklen_t socket_len;
+    socklen_t dest_len;
+    char* socket_ip;
+    int socket_port, sock;
     char buffer[4096];
 public:
-    Socket(char* ip = "127.0.0.1" , int port = 8000);
+    Socket(char* ip = "127.0.0.1" , int port = 8000, bool is_serv = false);
     ~Socket();
     void Bind();
     void Send(std::string);

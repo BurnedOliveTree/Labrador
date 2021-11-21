@@ -1,13 +1,12 @@
 #include "Client.h"
 
-Client::Client(char* ip, int port){
-    socket = Socket(ip,port);
+Client::Client(char* ip, int port):sock(ip,port, false){
 }
 
 void Client::Send(std::string msg){
-    socket.Send(msg);
+    sock.Send(msg);
 }
 
 std::string Client::Receive(){
-    return socket.Receive();
+    return sock.Receive();
 }
