@@ -1,5 +1,6 @@
 import logging, signal, sys
-from lib.Socket import ServerSocketInterface, ServerSocket
+from lib.ServerSocketInterface import ServerSocketInterface
+from lib.ServerSocket import ServerSocket
 from lib.Host import Host, get_project_root
 from pynput.keyboard import Key, Listener
 from threading import Thread
