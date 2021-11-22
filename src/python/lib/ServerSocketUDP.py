@@ -1,6 +1,6 @@
 from lib.Socket import Socket
 
-class ClientSocket(Socket):
+class ServerSocket(Socket):
     def connect(self) -> None:
         super().connect()
-        self.socket.connect((self.host, self.port))
+        self.socket.bind((self.host, self.port))

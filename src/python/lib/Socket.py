@@ -75,7 +75,7 @@ class Socket:
     
     def connect(self) -> None:
         if not self.socket:
-            self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_STREAM)
+            self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
             self.socket.settimeout(self.timeout)
 
     def disconnect(self) -> None:
