@@ -66,7 +66,7 @@ class Socket:
         data = []
         max_size = min(65536, self.packet_size, len(raw_data) + 4) - 4     # TODO len(raw_data) - to be deleted
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
-        if datagram_amount >= 32768:
+        if datagram_amount >= 256:
             raise ValueError("Given data was too big, resulting in too many datagrams")
         for i in range(0, datagram_amount - 1):
             data.append(self.__create_datagram(raw_data, datagram_amount, i, (max_size * i, max_size * (i + 1))))
