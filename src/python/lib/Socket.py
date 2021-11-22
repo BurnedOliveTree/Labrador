@@ -13,34 +13,34 @@ class Socket:
         self.socket: socket.socket = None
         self.host: str = host
         self.port: str = port
-        self.buffer_size = 32
+        self.packet_size = 32
         self.timeout = 10
     
     def read(self) -> None:
         address = None
-        size, current_size = 1, 0
+        amount, current_amount = 1, 0
         data_map: dict = {}
-        while current_size < size:
+        while current_amount < amount:
             try:
-                datagram, address = self.socket.recvfrom(self.buffer_size)
-                data, size, _, number = self.__split_read_data(datagram)
+                datagram, address = self.socket.recvfrom(65536)
+                data, size, amount, number = self.__split_read_data(datagram)
                 data_map[number] = data
-                current_size += 1
+                current_amount += 1
             except socket.error:
                 if len(data_map) > 0:
                     logging.warn("Socket timed out, data is probably corrupted")
-                    current_size += 1
+                    current_amount += 1
                 else:
-                    size, current_size = 1, 0
+                    amount, current_amount = 1, 0
         data = b''.join(val for (_, val) in data_map.items())
         return data, address
     
     def __split_read_data(self, datagram: bytes):
         header = datagram[:4]
         size = int(header[0] * (2 ** 8) + header[1])
-        is_complex = bool(header[2] << 7)
-        number = int((header[2] & 0x7F) * (2 ** 8) + header[3])
-        return datagram[4:], size, is_complex, number
+        amount = int(header[2])
+        number = int(header[3])
+        return datagram[4:], size, amount, number
 
     def send(self, binary_stream: io.BytesIO, address: str = None) -> None:
         datagram_number = 0
@@ -52,18 +52,19 @@ class Socket:
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
             datagram_number += 1
     
-    def __create_datagram(self, raw_data, amount, number, data_range: tuple, flag = 0x00):
+    def __create_datagram(self, raw_data: bytes, amount: int, number: int, data_range: tuple):
         datagram: bytearray = bytearray(b'')
-        datagram.extend([ byte(amount // 256), byte(amount % 256) ])
-        datagram.extend([ byte(flag | (number // 256)), byte(number % 256) ])
+        size = (data_range[1] if data_range[1] else len(raw_data)) - data_range[0]
+        datagram.extend(byte(size // 256))
+        datagram.extend(byte(size % 256))
+        datagram.extend(byte(amount % 256))
+        datagram.extend(byte(number % 256))
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
     def __split_send_data(self, raw_data: bytes) -> str:
-        if self.buffer_size >= 65536:
-            raise ValueError("Given buffer size is too big")
         data = []
-        max_size = self.buffer_size - 4
+        max_size = min(65536, self.packet_size, len(raw_data) + 4) - 4     # TODO len(raw_data) - to be deleted
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
         if datagram_amount >= 32768:
             raise ValueError("Given data was too big, resulting in too many datagrams")
