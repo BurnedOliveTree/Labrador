@@ -13,7 +13,7 @@ class Socket:
         self.socket: socket.socket = None
         self.host: str = host
         self.port: str = port
-        self.packet_size = 32
+        self.packet_size = 65536
         self.timeout = 10
     
     def read(self) -> None:
