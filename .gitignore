@@ -3,3 +3,6 @@ build/
 .dist
 .idea
 cmake-build-debug/
+__pycache__/
+*.log
+log/
