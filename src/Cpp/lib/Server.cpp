@@ -8,8 +8,12 @@ void Server::SendString(std::string msg){
     sock.Send(static_cast<const void*>(msg.c_str()),msg.length());
 }
 
-std::string Server::Receive(){
-    return sock.Receive();
+std::string Server::ReceiveString(){
+    return std::string(sock.Receive().get());
+}
+
+std::shared_ptr<struct SimpStruct> Server::ReceiveStruct(){
+    return (std::shared_ptr<struct SimpStruct>((struct SimpStruct*)sock.Receive().get()));
 }
 
 bool Server::CheckQuit(std::string msg){

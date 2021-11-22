@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     std::string msg;
     while (true){
         try{
-            msg = serv->Receive();
+            msg = serv->ReceiveString();
         } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
         }

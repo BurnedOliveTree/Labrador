@@ -66,11 +66,10 @@ void Socket::Send(const void* buff, int bsize){
         {
             throw std::runtime_error("Couldn't send message to server");
         }
-    delete[] buffer;
 }
 
-std::string Socket::Receive(){
-    buffer = new char[266603584];
+std::shared_ptr<char> Socket::Receive(){
+    buffer= std::shared_ptr<char>(new char[65538]);
     struct sockaddr* dst;
     socklen_t* dst_len;
     if(is_server){
@@ -81,11 +80,9 @@ std::string Socket::Receive(){
         dst = self_addr;
         dst_len = &socket_len;
     }
-    if( recvfrom(sock, buffer, 266603584, 0, dst, dst_len) < 0 )
+    if( recvfrom(sock, buffer.get(), 65538, 0, dst, dst_len) < 0 )
         {   
             throw std::runtime_error("Couldn't receive message from server");
         }
-    std::string msg(buffer);
-    delete[] buffer;
-    return msg;
+    return buffer;
 }

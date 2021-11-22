@@ -14,6 +14,7 @@ class Server{
 public:
     Server(std::string ip = "127.0.0.1" , int port = 8000);
     void SendString(std::string msg);
-    std::string Receive();
+    std::string ReceiveString();
+    std::shared_ptr<struct SimpStruct> ReceiveStruct();
     bool CheckQuit(std::string msg);
 };
