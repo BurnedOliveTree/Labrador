@@ -5,8 +5,6 @@ Socket::Socket(std::string ip, int port, bool is_serv){
     socket_ip = ip;
     socket_port = port;
     if (std::string(ip).find('.') != std::string::npos){
-        std::cout << "Using IPv4" << std::endl; 
-
         desc_4.sin_family = AF_INET;
         desc_4.sin_port = htons( socket_port );
 
@@ -24,8 +22,6 @@ Socket::Socket(std::string ip, int port, bool is_serv){
         self_addr = (struct sockaddr*) &desc_4;
     }
     else {
-        std::cout << "Using IPv6" << std::endl; 
-
         desc_6.sin6_family = AF_INET6;
         desc_6.sin6_port = htons( socket_port );
 
@@ -55,8 +51,15 @@ void Socket::Bind(){
     }
 }
 
-void Socket::Send(std::string msg){
-    strncpy( buffer, msg.c_str(), sizeof(buffer));
+void Socket::Send(const char* buff, int bsize){
+    buffer = new char[4+bsize];
+    int16_t buff_len = bsize;
+    int8_t max_packet = 0, num_packet = 0;
+    memcpy(buffer, &buff_len, 2);
+    memcpy(buffer+2, &max_packet, 1);
+    memcpy(buffer+3, &num_packet, 1);
+    memcpy(buffer+4, buff, bsize);
+
     struct sockaddr* dst;
     socklen_t dst_len;
     if(is_server){
@@ -67,14 +70,15 @@ void Socket::Send(std::string msg){
         dst = self_addr;
         dst_len = socket_len;
     }
-    if(sendto(sock, buffer, strlen(buffer), 0, dst, socket_len ) < 0 )
+    if(sendto(sock, (void *) buff, buff_len+4, 0, dst, dst_len ) < 0 )
         {
             throw std::runtime_error("Couldn't send message to server");
         }
+    delete[] buffer;
 }
 
 std::string Socket::Receive(){
-    memset(buffer, 0, sizeof(buffer));
+    buffer = new char[4082];
     struct sockaddr* dst;
     socklen_t* dst_len;
     if(is_server){
@@ -85,11 +89,12 @@ std::string Socket::Receive(){
         dst = self_addr;
         dst_len = &socket_len;
     }
-    if( recvfrom(sock, buffer, sizeof(buffer), 0, dst, &socket_len) < 0 )
+    if( recvfrom(sock, buffer, sizeof(buffer), 0, dst, dst_len) < 0 )
         {   
             throw std::runtime_error("Couldn't receive message from server");
         }
     std::string msg(buffer);
     std::cout << "Received message: " << msg << std::endl;
+    delete[] buffer;
     return msg;
 }

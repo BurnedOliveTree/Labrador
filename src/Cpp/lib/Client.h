@@ -14,6 +14,6 @@ class Client{
     Socket sock;
 public:
     Client(std::string ip, int port);
-    void Send(std::string msg);
+    void SendString(std::string msg);
     std::string Receive();
 };

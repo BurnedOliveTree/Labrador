@@ -3,8 +3,8 @@
 Client::Client(std::string ip, int port):sock(ip,port, false){
 }
 
-void Client::Send(std::string msg){
-    sock.Send(msg);
+void Client::SendString(std::string msg){
+    sock.Send(msg.c_str(),msg.length());
 }
 
 std::string Client::Receive(){

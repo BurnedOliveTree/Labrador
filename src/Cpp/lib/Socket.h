@@ -20,11 +20,11 @@ class Socket{
     socklen_t dest_len;
     std::string socket_ip;
     int socket_port, sock;
-    char buffer[4096];
+    char* buffer;
 public:
     Socket(std::string ip = "127.0.0.1" , int port = 8000, bool is_serv = false);
     ~Socket();
     void Bind();
-    void Send(std::string);
+    void Send(const char* buff, int bsize);
     std::string Receive();
 };

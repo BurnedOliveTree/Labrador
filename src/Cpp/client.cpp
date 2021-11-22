@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
     if(argc > 2){
         ip = argv[1];
         port = atoi(argv[2]);
-    }   
+    }
     std::cout << ip << " " << port << std::endl;
     Client* cl;
     try{
@@ -20,11 +20,10 @@ int main(int argc, char* argv[])
     }
     for(std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
         try{
-            cl->Send(*it);
+            cl->SendString(*it);
             } catch (const std::exception& e){
             std::cout << e.what() << std::endl;
             }
     }
-
+    delete cl;
 }
-
