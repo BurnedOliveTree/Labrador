@@ -7,6 +7,10 @@ void Client::SendString(std::string msg){
     sock.Send(static_cast<const void*>(msg.c_str()),msg.length());
 }
 
+void Client::SendStruct(struct SimpStruct msg){
+    sock.Send(static_cast<const void*>(&msg),sizeof(msg));
+}
+
 std::string Client::ReceiveString(){
     return std::string(sock.Receive().get());   
 }

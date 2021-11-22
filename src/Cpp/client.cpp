@@ -29,36 +29,10 @@
 //     delete cl;
 // }
 
-int main(int argc, char* argv[])
-// zad 1.2
-{ 
-    std::string ip = "127.0.0.1";
-    int port = 2137;
-    if(argc > 2){
-        ip = argv[1];
-        port = atoi(argv[2]);
-    }
-    std::cout << ip << " " << port << std::endl;
-    try{
-        Client cl(ip, port);
-    
-    int iter = 0;
-    while (1) {
-        std::string mess(2 << iter, 'a');
-        cl.SendString(mess);
-        iter++;
-        }
-    }  
-    catch (const std::exception& e){
-            std::cout << e.what() << std::endl;
-            
-    }
-}
-
-
 // int main(int argc, char* argv[])
-// // zad 2.2
+// // zad 1.2
 // { 
+    
 //     std::string ip = "127.0.0.1";
 //     int port = 2137;
 //     if(argc > 2){
@@ -68,10 +42,41 @@ int main(int argc, char* argv[])
 //     std::cout << ip << " " << port << std::endl;
 //     try{
 //         Client cl(ip, port);
-//         cl.SendString("struct {long int a; short int b; char c[10];}");
+    
+//     int iter = 0;
+//     while (1) {
+//         std::string mess(2 << iter, 'a');
+//         cl.SendString(mess);
+//         iter++;
+//         }
 //     }  
 //     catch (const std::exception& e){
 //             std::cout << e.what() << std::endl;
             
 //     }
 // }
+
+
+int main(int argc, char* argv[])
+// zad 2.2
+{ 
+    struct SimpStruct s;
+    s.a = 20;
+    s.b = 2;
+    s.c = 8000;
+    std::string ip = "127.0.0.1";
+    int port = 2137;
+    if(argc > 2){
+        ip = argv[1];
+        port = atoi(argv[2]);
+    }
+    std::cout << ip << " " << port << std::endl;
+    try{
+        Client cl(ip, port);
+        cl.SendStruct(s);
+    }  
+    catch (const std::exception& e){
+            std::cout << e.what() << std::endl;
+            
+    }
+}

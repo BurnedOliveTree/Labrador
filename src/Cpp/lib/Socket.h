@@ -30,7 +30,7 @@ public:
 };
 
 struct SimpStruct{
-    float a;
-    float b;
-    int c;
+    int a;
+    int b;
+    long c;
 };

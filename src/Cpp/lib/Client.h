@@ -15,6 +15,7 @@ class Client{
 public:
     Client(std::string ip, int port);
     void SendString(std::string msg);
+    void SendStruct(struct SimpStruct msg);
     std::string ReceiveString();
     std::shared_ptr<struct SimpStruct> ReceiveStruct();
 };
