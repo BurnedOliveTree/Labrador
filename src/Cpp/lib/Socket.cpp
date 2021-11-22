@@ -51,15 +51,7 @@ void Socket::Bind(){
     }
 }
 
-void Socket::Send(const char* buff, int bsize){
-    buffer = new char[4+bsize];
-    int16_t buff_len = bsize;
-    int8_t max_packet = 0, num_packet = 0;
-    memcpy(buffer, &buff_len, 2);
-    memcpy(buffer+2, &max_packet, 1);
-    memcpy(buffer+3, &num_packet, 1);
-    memcpy(buffer+4, buff, bsize);
-
+void Socket::Send(const void* buff, int bsize){
     struct sockaddr* dst;
     socklen_t dst_len;
     if(is_server){
@@ -70,7 +62,7 @@ void Socket::Send(const char* buff, int bsize){
         dst = self_addr;
         dst_len = socket_len;
     }
-    if(sendto(sock, (void *) buff, buff_len+4, 0, dst, dst_len ) < 0 )
+    if(sendto(sock, buff, bsize, 0, dst, dst_len ) < 0 )
         {
             throw std::runtime_error("Couldn't send message to server");
         }

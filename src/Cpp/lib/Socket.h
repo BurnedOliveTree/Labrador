@@ -25,6 +25,6 @@ public:
     Socket(std::string ip = "127.0.0.1" , int port = 8000, bool is_serv = false);
     ~Socket();
     void Bind();
-    void Send(const char* buff, int bsize);
+    void Send(const void* buff, int bsize);
     std::string Receive();
 };
