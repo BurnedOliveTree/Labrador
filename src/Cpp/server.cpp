@@ -10,7 +10,6 @@ int main(int argc, char* argv[])
         ip = argv[1];
         port = atoi(argv[2]);
     }
-    std::vector<std::string> messages;
     Server* serv;
     try{
         serv = new Server(ip, port);
@@ -24,13 +23,9 @@ int main(int argc, char* argv[])
         } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
         }
-        messages.push_back(msg);
+        std::cout << "Received message: " << msg.length() << std::endl;
         if(serv->CheckQuit(msg)){
             break;
         }
-    }
-
-    for(std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
-        std::cout << *it << std::endl;
     }
 }
