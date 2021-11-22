@@ -15,10 +15,9 @@ class Server(Host):
 
     def listen(self) -> None:
         data = None
+        print("Listening on ", self.host, ":", self.port)
         socket = ServerSocket(self.host, self.port)
         with ServerSocketInterface(socket) as self.socket:
-            self.socket.bind()
-            print("Listening on ", self.host, ":", self.port)
             while not self.is_quit_sent:
                 data, host, is_struct = self.socket.read()
                 print(f"Receiving data from: {host}\nReceived data: {data}")

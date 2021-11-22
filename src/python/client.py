@@ -1,6 +1,6 @@
 import sys
 from lib.SocketInterface import SocketInterface
-from lib.Socket import Socket
+from lib.ClientSocket import ClientSocket
 from lib.Host import Host, get_project_root
 import logging
 
@@ -12,7 +12,7 @@ class Client(Host):
 
     def connect(self) -> None:
         self.get_input_type()
-        socket = Socket(self.host, self.port)
+        socket = ClientSocket(self.host, self.port)
         received_data = None
         with SocketInterface(socket) as socket:
             print("Will send data to ", self.host, ":", self.port)
