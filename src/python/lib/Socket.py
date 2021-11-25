@@ -1,14 +1,5 @@
-import io, logging, socket
-from numpy import byte
+import io, logging, socket, struct
 
-# Datagram structure:
-# D - data, S - size of this packet, A - amount of all datagrams for this data, N - number of datagram
-# SSSSSSSS
-# SSSSSSSS
-# AAAAAAAA
-# NNNNNNNN
-# DDDDD...
-# Anakin would hate it
 class Socket:
     def __init__(self, host: str, port: str):
         self.socket: socket.socket = None
@@ -37,11 +28,9 @@ class Socket:
         return data, address
     
     def __split_read_data(self, datagram: bytes):
-        header = datagram[:4]
-        size = int(header[0] * (2 ** 8) + header[1])  # TODO change to struct (don't forget about ntohl!)
-        amount = int(header[2])
-        number = int(header[3])
-        return datagram[4:], size, amount, number
+        header = datagram[:struct.calcsize('IHH')]
+        size, amount, number = struct.unpack('!IHH', header)
+        return datagram[struct.calcsize('IHH'):], size, amount, number
 
     def send(self, binary_stream: io.BytesIO, address: str = None) -> None:
         datagram_number = 0
@@ -56,16 +45,13 @@ class Socket:
     def __create_datagram(self, raw_data: bytes, amount: int, number: int, data_range: tuple):
         datagram: bytearray = bytearray(b'')
         size = (data_range[1] if data_range[1] else len(raw_data)) - data_range[0]
-        datagram.extend(byte(size // 256))
-        datagram.extend(byte(size % 256))
-        datagram.extend(byte(amount % 256))
-        datagram.extend(byte(number % 256))
+        datagram.extend(struct.pack('!IHH', size, amount, number))
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
     def __split_send_data(self, raw_data: bytes) -> str:
         data = []
-        max_size = min(65536, self.packet_size, len(raw_data) + 4) - 4     # TODO len(raw_data) - to be deleted
+        max_size = min(65536, self.packet_size) - struct.calcsize('IHH')     # TODO len(raw_data) - to be deleted
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
         if datagram_amount >= 256:
             raise ValueError("Given data was too big, resulting in too many datagrams")
