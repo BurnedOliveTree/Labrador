@@ -2,18 +2,19 @@ import io, logging, socket
 from numpy import byte
 
 # Datagram structure:
-# D - data, A - amount of all datagrams for this data, F - flags, N - number of datagram
+# D - data, S - size of this packet, A - amount of all datagrams for this data, N - number of datagram
+# SSSSSSSS
+# SSSSSSSS
 # AAAAAAAA
-# AAAAAAAA
-# FNNNNNNN
 # NNNNNNNN
 # DDDDD...
+# Anakin would hate it
 class Socket:
     def __init__(self, host: str, port: str):
         self.socket: socket.socket = None
         self.host: str = host
         self.port: str = port
-        self.packet_size = 65536
+        self.packet_size = 256
         self.timeout = 10
     
     def read(self) -> None:
@@ -26,7 +27,7 @@ class Socket:
                 data, size, amount, number = self.__split_read_data(datagram)
                 data_map[number] = data
                 current_amount += 1
-            except socket.error:
+            except socket.error:  # TODO TCP will probably not need a timeout
                 if len(data_map) > 0:
                     logging.warn("Socket timed out, data is probably corrupted")
                     current_amount += 1
@@ -37,7 +38,7 @@ class Socket:
     
     def __split_read_data(self, datagram: bytes):
         header = datagram[:4]
-        size = int(header[0] * (2 ** 8) + header[1])
+        size = int(header[0] * (2 ** 8) + header[1])  # TODO change to struct (don't forget about ntohl!)
         amount = int(header[2])
         number = int(header[3])
         return datagram[4:], size, amount, number
