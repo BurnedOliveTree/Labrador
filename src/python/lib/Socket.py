@@ -7,6 +7,7 @@ class Socket:
         self.port: str = port
         self.packet_size = 256
         self.client_adress = None
+        self.header_types = '!IHH'
     
     def read(self):
         address = None
@@ -30,9 +31,9 @@ class Socket:
         return data, self.client_adress
     
     def __split_read_data(self, datagram: bytes):
-        header = datagram[:struct.calcsize('IHH')]
-        size, amount, number = struct.unpack('!IHH', header)
-        return datagram[struct.calcsize('IHH'):], size, amount, number
+        header = datagram[:struct.calcsize(self.header_types)]
+        size, amount, number = struct.unpack(self.header_types, header)
+        return datagram[struct.calcsize(self.header_types):], size, amount, number
 
     def send(self, binary_stream: io.BytesIO, address: str = None) -> None:
         datagram_number = 0
@@ -47,13 +48,13 @@ class Socket:
     def __create_datagram(self, raw_data: bytes, amount: int, number: int, data_range: tuple):
         datagram: bytearray = bytearray(b'')
         size = (data_range[1] if data_range[1] else len(raw_data)) - data_range[0]
-        datagram.extend(struct.pack('!IHH', size, amount, number))
+        datagram.extend(struct.pack(self.header_types, size, amount, number))
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
     def __split_send_data(self, raw_data: bytes) -> str:
         data = []
-        max_size = min(65536, self.packet_size) - struct.calcsize('IHH')
+        max_size = min(65536, self.packet_size) - struct.calcsize(self.header_types)
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
         if datagram_amount >= 256:
             raise ValueError("Given data was too big, resulting in too many datagrams")
