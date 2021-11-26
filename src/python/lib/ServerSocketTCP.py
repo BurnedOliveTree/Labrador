@@ -9,10 +9,9 @@ class ServerSocket(Socket):
     def connect(self) -> None:
         if not self.socket and not self.main_socket:
             self.main_socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_STREAM)
-            self.main_socket.settimeout(self.timeout)
             self.main_socket.bind((self.host, self.port))
             self.main_socket.listen(1)
-            self.socket, addr = self.main_socket.accept()
+            self.socket, self.client_adress = self.main_socket.accept()
 
     def disconnect(self) -> None:
         if self.socket and self.main_socket:

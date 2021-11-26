@@ -1,6 +1,6 @@
-from lib.Socket import Socket
+from lib.SocketUDP import SocketUDP
 
-class ServerSocket(Socket):
+class ServerSocket(SocketUDP):
     def connect(self) -> None:
         super().connect()
         self.socket.bind((self.host, self.port))
