@@ -1,4 +1,5 @@
 from lib.Socket import Socket
+import logging
 
 class SocketUDP(Socket):
     def __init__(self, host: str, port: str):
@@ -6,5 +7,6 @@ class SocketUDP(Socket):
         self.timeout = 10
     
     def connect(self) -> None:
-        super().__init__()    
+        super().connect()
+        logging.info('Using UDP socket')
         self.socket.settimeout(self.timeout)

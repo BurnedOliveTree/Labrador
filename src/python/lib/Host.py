@@ -5,18 +5,20 @@ from subprocess import check_output
 class Host:
     def __init__(self, argv: list):
         # python3 [FILENAME] [IP_VERSION_NUMBER] [PORT_NUMBER] [ADDRESS]
-        host, port, ipv = self.__parse_args(argv)
+        host, port, ipv, protocol = self.__parse_args(argv)
         self.ip_version = ipv if ipv is not None and ipv in [4, 6] else 4
         self.host = host if host is not None else self.get_default_host_address(self.ip_version)
         self.port = port if port is not None else 8000
+        self.protocol = protocol if protocol is not None else 'TCP'
     
     def __parse_args(self, argv):
         parser = ArgumentParser(description=f'Run a socket-using server/client in python')
         parser.add_argument('-a', '--address', type=str, help='the ip address of server')
         parser.add_argument('-p', '--port', type=int, help='the port of server')
         parser.add_argument('-v', '--ipv', type=int, help='the ip version used in communication')
+        parser.add_argument('-t', '--protocol', type=str, help='use UDP / TCP protocol')
         args = parser.parse_args(argv[1:])
-        return args.address, args.port, args.ipv
+        return args.address, args.port, args.ipv, args.protocol
     
     def get_default_host_address(self, ip_version: int) -> str:
         if ip_version == 4:

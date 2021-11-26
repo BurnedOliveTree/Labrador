@@ -1,8 +1,8 @@
-import sys
+import logging, sys
 from lib.SocketInterface import SocketInterface
-from lib.ClientSocketTCP import ClientSocket
+from lib.ClientSocketTCP import ClientSocket as SocketTCP
+from lib.SocketUDP import SocketUDP as SocketUDP
 from lib.Host import Host, get_project_root
-import logging
 
 class Client(Host):
     def __init__(self, argv: list):
@@ -12,7 +12,7 @@ class Client(Host):
 
     def connect(self) -> None:
         self.get_input_type()
-        socket = ClientSocket(self.host, self.port)
+        socket = self.__get_socket()
         received_data = None
         with SocketInterface(socket) as socket:
             print("Will send data to ", self.host, ":", self.port)
@@ -25,6 +25,14 @@ class Client(Host):
             else:
                 socket.send(data)
         print('Client finished')
+    
+    def __get_socket(self):
+        if self.protocol == 'UDP':
+            return SocketUDP(self.host, self.port)
+        elif self.protocol == 'TCP':
+            return SocketTCP(self.host, self.port)
+        else:
+            raise ValueError(f'invalid protocol type: {self.protocol} please choose from UDP or TCP')
 
     def get_user_data(self) -> str:
         if self.send_type_is_struct:
