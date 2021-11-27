@@ -8,5 +8,5 @@ class Exit{
     char getch(void);
 
 public:
-    bool exit();
+    void exit();
 };

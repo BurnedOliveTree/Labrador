@@ -22,11 +22,11 @@ char Exit::getch(void)
     return buf;
  }
 
-bool Exit::exit(){
+void Exit::exit(){
     char buf;
     while(1){
         buf = getch();
         if (buf == 27) break;
     }
-    return true;
+    return;
 }
