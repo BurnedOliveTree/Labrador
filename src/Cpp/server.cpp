@@ -1,3 +1,4 @@
+#include "lib/SocketUDP.h"
 #include "lib/Server.h"
 #include <iostream>
 #include <vector>
@@ -6,17 +7,16 @@
 #include <pthread.h>
 
 void listener(Server* serv){
+    std::vector<char> vecmsg;
     std::string msg;
     while (true){
         try{
-            msg = serv->ReceiveString();
+            vecmsg  = serv->Receive();
+            msg = std::string(vecmsg.begin(), vecmsg.end());
         } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
         }
         std::cout << "Received message: " << msg << std::endl;
-        if(serv->CheckQuit(msg)){
-            break;
-        }
     }
 }
 
@@ -28,9 +28,11 @@ int main(int argc, char* argv[])
         ip = argv[1];
         port = atoi(argv[2]);
     }
-    Server* serv;
+    SocketUDP* sockUDP;
+    Server* serv; 
     try{
-        serv = new Server(ip, port);
+        sockUDP = new SocketUDP(ip, port, true);
+        serv = new Server(sockUDP);
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
     }

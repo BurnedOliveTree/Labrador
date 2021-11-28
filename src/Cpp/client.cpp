@@ -1,3 +1,4 @@
+#include "lib/SocketUDP.h"
 #include "lib/Client.h"
 #include <iostream>
 #include <vector>
@@ -13,15 +14,17 @@ int main(int argc, char* argv[])
         port = atoi(argv[2]);
     }
     std::cout << ip << " " << port << std::endl;
+    SocketUDP* sockUDP;
     Client* cl;
     try{
-        cl = new Client(ip, port);
+        sockUDP = new SocketUDP(ip, port, false);
+        cl = new Client(sockUDP);
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
     }
     for(std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
         try{
-            cl->SendString(*it);
+            cl->Send(*it);
             } catch (const std::exception& e){
             std::cout << e.what() << std::endl;
             }

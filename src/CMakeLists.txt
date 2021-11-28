@@ -1,5 +1,10 @@
 SET(G++_COVERAGE_COMPILE_FLAG = "-pthread")
 
+add_library(
+    ServerCpp
+    Cpp/lib/Server.h
+    Cpp/lib/Server.cpp
+)
 
 add_library(
     SocketCpp
@@ -8,9 +13,10 @@ add_library(
 )
 
 add_library(
-    ServerCpp
-    Cpp/lib/Server.h
-    Cpp/lib/Server.cpp
+    SocketInterface
+    Cpp/lib/SocketUDP.h
+    Cpp/lib/SocketInterface.h
+    Cpp/lib/SocketUDP.cpp
 )
 
 add_library(
@@ -18,6 +24,7 @@ add_library(
     Cpp/lib/Client.h
     Cpp/lib/Client.cpp
 )
+
 
 add_library(
     ExitCpp
@@ -28,11 +35,13 @@ add_library(
 
 
 add_executable(ClientC Cpp/client.cpp)
+target_link_libraries(ClientC PUBLIC SocketInterface)
 target_link_libraries(ClientC PUBLIC ClientCpp )
 target_link_libraries(ClientC PUBLIC SocketCpp )
 add_executable(ServerC Cpp/server.cpp)
-target_link_libraries(ServerC PUBLIC ServerCpp )
 target_link_libraries(ServerC PUBLIC -pthread )
+target_link_libraries(ServerC PUBLIC SocketInterface )
+target_link_libraries(ServerC PUBLIC ServerCpp )
 target_link_libraries(ServerC PUBLIC SocketCpp )
 target_link_libraries(ServerC PUBLIC ExitCpp )
 

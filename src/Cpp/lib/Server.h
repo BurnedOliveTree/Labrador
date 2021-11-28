@@ -7,15 +7,14 @@
 #include <sys/socket.h>
 #include <string>
 #include <iostream>
+#include <memory>
 #include "Socket.h"
+#include "SocketInterface.h"
 
 class Server{
-    Socket sock;
+    SocketInterface* si;
 public:
-    Server(std::string ip = "127.0.0.1" , int port = 8000);
-    void SendString(std::string msg);
-    void SendStruct(struct SimpStruct msg);
-    std::string ReceiveString();
-    std::shared_ptr<struct SimpStruct> ReceiveStruct();
-    bool CheckQuit(std::string msg);
+    Server(SocketInterface* _si);
+    void Send(std::string msg);
+    std::vector<char> Receive();
 };

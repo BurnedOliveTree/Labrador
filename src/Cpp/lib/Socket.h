@@ -8,6 +8,9 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <vector>
+
+constexpr int max_buffer_size = 32768;
 
 class Socket{
     struct sockaddr_in desc_4;
@@ -20,13 +23,13 @@ class Socket{
     socklen_t dest_len;
     std::string socket_ip;
     int socket_port, sock;
-    std::shared_ptr<char> buffer;
+
 public:
-    Socket(std::string ip = "127.0.0.1" , int port = 8000, bool is_serv = false);
+    Socket(std::string ip = "127.0.0.1" , int port = 8000, bool is_serv = false, bool is_UDP = true);
     ~Socket();
     void Bind();
-    void Send(const void* buff, int bsize);
-    std::shared_ptr<char> Receive();
+    void Send(std::vector<char> msg);
+    std::vector<char> Receive();
 };
 
 struct SimpStruct{

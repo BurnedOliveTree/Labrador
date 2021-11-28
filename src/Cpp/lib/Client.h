@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h> 
@@ -9,13 +10,12 @@
 #include <iostream>
 #include <memory>
 #include "Socket.h"
+#include "SocketInterface.h"
 
 class Client{
-    Socket sock;
+    SocketInterface* si;
 public:
-    Client(std::string ip, int port);
-    void SendString(std::string msg);
-    void SendStruct(struct SimpStruct msg);
-    std::string ReceiveString();
-    std::shared_ptr<struct SimpStruct> ReceiveStruct();
+    Client(SocketInterface* _si);
+    void Send(std::string msg);
+    std::vector<char> Receive();
 };
