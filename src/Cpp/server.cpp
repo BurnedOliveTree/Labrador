@@ -13,7 +13,7 @@ void listener(Server* serv){
         } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
         }
-        std::cout << "Received message: " << msg.length() << std::endl;
+        std::cout << "Received message: " << msg << std::endl;
         if(serv->CheckQuit(msg)){
             break;
         }
