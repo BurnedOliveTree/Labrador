@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     SocketInterface* sockint;
     Client* cl;
     try{
-        // sockUDP = new SocketUDP(ip, port, false);
+        // sockint = new SocketUDP(ip, port, false);
         sockint = new SocketTCP(ip, port, false);
         cl = new Client(sockint);
     } catch (const std::exception& e){

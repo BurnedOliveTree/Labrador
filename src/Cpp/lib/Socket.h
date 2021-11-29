@@ -20,6 +20,7 @@ class Socket{
     struct sockaddr* self_addr ;
     struct sockaddr dest_addr ;
     bool is_server;
+    bool is_datagram;
 
     socklen_t socket_len;
     socklen_t dest_len;
@@ -34,13 +35,14 @@ public:
     void Listen();
     void Write(std::vector<char> msg);
     void Send(std::vector<char> msg);
+    void SocketSend(std::vector<char> msg);
     std::vector<char> Receive();
     std::vector<char> Read();
 
 };
 
-struct SimpStruct{
-    int a;
-    int b;
-    long c;
+struct SockHeader{
+    int16_t length;
+    int8_t packet_max;
+    int8_t packet_id;
 };

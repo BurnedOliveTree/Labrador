@@ -11,7 +11,7 @@ SocketTCP::SocketTCP(std::string ip, int port,  bool is_serv): sock(ip,port,is_s
 }
 
 void SocketTCP::Send(std::string msg){
-    sock.Write(std::vector<char>(msg.begin(), msg.end()));
+    sock.SocketSend(std::vector<char>(msg.begin(), msg.end()));
 }
 
 std::vector<char> SocketTCP::Receive(){

@@ -2,6 +2,7 @@
 
 Socket::Socket(std::string ip, int port, bool is_serv,bool is_UDP){
     is_server = is_serv;
+    is_datagram = is_UDP;
     socket_ip = ip;
     socket_port = port;
     if (std::string(ip).find('.') != std::string::npos){
@@ -94,7 +95,9 @@ std::vector<char> Socket::Read(){
         std::cout << "READ 1stCHar: "<< buffer.data()[0] << ", Rall " << rall << std::endl;
 
     } while (rval > 0);
+    std::cout << "Here" << std::endl;
     buffer.resize(rall);
+    std::cout << "Here" << std::endl;
     return buffer;
 }
 
@@ -142,12 +145,38 @@ std::vector<char> Socket::Receive(){
         dst = self_addr;
         dst_len = &socket_len;
     }
+
     int result = recvfrom(sock, buffer.data(), buffer.size(), 0, dst, dst_len);
     if( result < 0 )
         {   
             throw std::runtime_error("Couldn't receive message from server");
         }
     buffer.resize(result);
+    std::cout << "RECEIVE LEN: "<< result << std::endl;
     std::cout << "RECEIVE 1stCHar: "<< buffer.data()[0] << std::endl;
     return buffer;
+}
+
+void Socket::SocketSend(std::vector<char> msg){
+    int msg_size, header_size = 4;
+    int max_packet = msg.size()/(max_buffer_size-header_size);
+    for(int id_packet = 0; id_packet <= max_packet; id_packet++){
+        if(id_packet == max_packet){
+            msg_size = msg.size();
+        } else {
+            msg_size = max_buffer_size-header_size;
+        }
+        std::vector<char> sendmsg(4);
+        SockHeader* sh = (struct SockHeader*) sendmsg.data();
+        sh->length = htons(msg_size);
+        sh->packet_max = htons(max_packet);
+        sh->packet_id = htons(id_packet);
+        sendmsg.insert(sendmsg.end(), msg.begin()+(id_packet * (max_buffer_size-header_size)), msg.begin()+(id_packet * (max_buffer_size-header_size))+msg_size);
+        if(is_datagram){
+            Send(sendmsg);
+        } else {
+            Write(sendmsg);
+        }
+    }
+    
 }

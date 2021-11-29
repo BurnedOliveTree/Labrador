@@ -7,7 +7,7 @@ SocketUDP::SocketUDP(std::string ip, int port,  bool is_serv): sock(ip,port,is_s
 }
 
 void SocketUDP::Send(std::string msg){
-    sock.Send(std::vector<char>(msg.begin(), msg.end()));
+    sock.SocketSend(std::vector<char>(msg.begin(), msg.end()));
 }
 
 std::vector<char> SocketUDP::Receive(){
