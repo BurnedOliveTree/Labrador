@@ -10,7 +10,7 @@ class SocketInterface:
         if data:
             if data[0] == 1:
                 is_struct = True
-                decoded_data = struct.unpack('!hhl', data[1:])  # TODO this needs to not be hardcoded
+                decoded_data = struct.unpack('!iil', data[1:])  # TODO this needs to not be hardcoded
             else:
                 is_struct = False
                 decoded_data = self.decode(data[1:])
@@ -22,7 +22,7 @@ class SocketInterface:
 
     def send(self, data: str, address: str = None, is_struct = False) -> None:
         if is_struct:
-            encoded_data = b'\1' + struct.pack('!hhl', 1, 2, 3)  # TODO this needs to not be hardcoded
+            encoded_data = b'\1' + struct.pack('!iil', 1, 2, 3)  # TODO this needs to not be hardcoded
         else:
             encoded_data = b'\0' + self.encode(data)
         self.__write_to_binary_stream(encoded_data)
