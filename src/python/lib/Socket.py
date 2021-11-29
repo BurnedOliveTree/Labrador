@@ -1,28 +1,23 @@
-import io, logging, socket
-from numpy import byte
+import io, logging, socket, struct
 
-# Datagram structure:
-# D - data, A - amount of all datagrams for this data, F - flags, N - number of datagram
-# AAAAAAAA
-# AAAAAAAA
-# FNNNNNNN
-# NNNNNNNN
-# DDDDD...
 class Socket:
     def __init__(self, host: str, port: str):
         self.socket: socket.socket = None
         self.host: str = host
         self.port: str = port
-        self.packet_size = 65536
-        self.timeout = 10
+        self.packet_size = 256
+        self.client_adress = None
+        self.header_types = '!IHH'
     
-    def read(self) -> None:
+    def read(self):
         address = None
         amount, current_amount = 1, 0
         data_map: dict = {}
         while current_amount < amount:
             try:
                 datagram, address = self.socket.recvfrom(65536)
+                if address is not None:
+                    self.client_adress = address
                 data, size, amount, number = self.__split_read_data(datagram)
                 data_map[number] = data
                 current_amount += 1
@@ -33,14 +28,12 @@ class Socket:
                 else:
                     amount, current_amount = 1, 0
         data = b''.join(val for (_, val) in data_map.items())
-        return data, address
+        return data, self.client_adress
     
     def __split_read_data(self, datagram: bytes):
-        header = datagram[:4]
-        size = int(header[0] * (2 ** 8) + header[1])
-        amount = int(header[2])
-        number = int(header[3])
-        return datagram[4:], size, amount, number
+        header = datagram[:struct.calcsize(self.header_types)]
+        size, amount, number = struct.unpack(self.header_types, header)
+        return datagram[struct.calcsize(self.header_types):], size, amount, number
 
     def send(self, binary_stream: io.BytesIO, address: str = None) -> None:
         datagram_number = 0
@@ -55,16 +48,13 @@ class Socket:
     def __create_datagram(self, raw_data: bytes, amount: int, number: int, data_range: tuple):
         datagram: bytearray = bytearray(b'')
         size = (data_range[1] if data_range[1] else len(raw_data)) - data_range[0]
-        datagram.extend(byte(size // 256))
-        datagram.extend(byte(size % 256))
-        datagram.extend(byte(amount % 256))
-        datagram.extend(byte(number % 256))
+        datagram.extend(struct.pack(self.header_types, size, amount, number))
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
     def __split_send_data(self, raw_data: bytes) -> str:
         data = []
-        max_size = min(65536, self.packet_size, len(raw_data) + 4) - 4     # TODO len(raw_data) - to be deleted
+        max_size = min(65536, self.packet_size) - struct.calcsize(self.header_types)
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
         if datagram_amount >= 256:
             raise ValueError("Given data was too big, resulting in too many datagrams")
@@ -76,7 +66,6 @@ class Socket:
     def connect(self) -> None:
         if not self.socket:
             self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
-            self.socket.settimeout(self.timeout)
 
     def disconnect(self) -> None:
         if self.socket:
