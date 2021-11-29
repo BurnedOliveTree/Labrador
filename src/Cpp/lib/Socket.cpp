@@ -33,7 +33,11 @@ Socket::Socket(std::string ip, int port, bool is_serv,bool is_UDP){
             throw std::runtime_error("inet_pton didn't convert IP");
         }
     
-        sock = socket( AF_INET6, SOCK_DGRAM, 0 );
+        if(is_UDP){
+            sock = socket( AF_INET, SOCK_DGRAM, 0 );
+        } else {
+            sock = socket( AF_INET, SOCK_STREAM, 0 );
+        }
         if(( sock ) < 0 )
         {
             throw std::runtime_error("Socket wasn't created");
@@ -52,6 +56,58 @@ void Socket::Bind(){
     {
         throw std::runtime_error("Socket wasn't binded");
     }
+}
+
+void Socket::Connect(){
+    struct sockaddr* dst;
+    socklen_t dst_len;
+    if(is_server){
+        dst = &dest_addr;
+        dst_len = dest_len;
+    }
+    else{
+        dst = self_addr;
+        dst_len = socket_len;
+    }
+    if (connect(sock, dst, dst_len) < 0) {
+        throw std::runtime_error("Couldn't connect to server");
+    }
+}
+
+void Socket::Listen(){
+    listen(sock, 2);
+}
+
+std::vector<char> Socket::Read(){
+    msgsock = accept(sock,(struct sockaddr *) 0,(socklen_t *) 0); 
+    std::cout << "Accepted " << msgsock << std::endl;
+    std::vector<char> buffer(max_buffer_size);
+    int rval = 0, rall = 0;
+    if (msgsock < 0) {
+        throw std::runtime_error("Couldn't accept connection");
+    }
+    do {
+        if ((rval = recv(msgsock,buffer.data()+rall, 1024, 0)) == -1) {
+            throw std::runtime_error("Error while reading stream");
+        }
+        rall += rval;
+        std::cout << "READ 1stCHar: "<< buffer.data()[0] << ", Rall " << rall << std::endl;
+
+    } while (rval > 0);
+    buffer.resize(rall);
+    return buffer;
+}
+
+void Socket::Write(std::vector<char> msg){
+    struct sockaddr* dst;
+    socklen_t dst_len;
+    int bsize = msg.size();
+    std::cout << "WRITE ROZMIAR: "<< bsize << std::endl;
+    std::cout << "WRITE 1stCHar: "<< msg.data()[0] << std::endl;
+    if(send(sock, msg.data(), bsize, 0) < 0)
+        {
+            throw std::runtime_error("Couldn't write message to stream");
+        }
 }
 
 void Socket::Send(std::vector<char> msg){

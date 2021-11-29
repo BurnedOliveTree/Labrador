@@ -1,4 +1,5 @@
 #include "lib/SocketUDP.h"
+#include "lib/SocketTCP.h"
 #include "lib/Server.h"
 #include <iostream>
 #include <vector>
@@ -28,11 +29,12 @@ int main(int argc, char* argv[])
         ip = argv[1];
         port = atoi(argv[2]);
     }
-    SocketUDP* sockUDP;
+    SocketInterface* sockint;
     Server* serv; 
     try{
-        sockUDP = new SocketUDP(ip, port, true);
-        serv = new Server(sockUDP);
+        // sockint = new SocketUDP(ip, port, true);
+        sockint = new SocketTCP(ip, port, true);
+        serv = new Server(sockint);
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
     }

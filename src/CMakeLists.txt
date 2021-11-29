@@ -17,6 +17,8 @@ add_library(
     Cpp/lib/SocketUDP.h
     Cpp/lib/SocketInterface.h
     Cpp/lib/SocketUDP.cpp
+    Cpp/lib/SocketTCP.h
+    Cpp/lib/SocketTCP.cpp
 )
 
 add_library(
