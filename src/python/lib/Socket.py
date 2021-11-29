@@ -1,84 +1,91 @@
-import socket
-import io
+import io, logging, socket
+from numpy import byte
 
+# Datagram structure:
+# D - data, A - amount of all datagrams for this data, F - flags, N - number of datagram
+# AAAAAAAA
+# AAAAAAAA
+# FNNNNNNN
+# NNNNNNNN
+# DDDDD...
 class Socket:
-    def __init__(self, host: str, port: str, ip_version: int):
-        self.socket = socket.socket(socket.AF_INET if ip_version == 4 else socket.AF_INET6, socket.SOCK_DGRAM)
-        self.host = host
-        self.port = port
-        self.buffer_size = 32
+    def __init__(self, host: str, port: str):
+        self.socket: socket.socket = None
+        self.host: str = host
+        self.port: str = port
+        self.packet_size = 65536
+        self.timeout = 10
     
     def read(self) -> None:
-        return self.socket.recvfrom(self.buffer_size)
+        address = None
+        amount, current_amount = 1, 0
+        data_map: dict = {}
+        while current_amount < amount:
+            try:
+                datagram, address = self.socket.recvfrom(65536)
+                data, size, amount, number = self.__split_read_data(datagram)
+                data_map[number] = data
+                current_amount += 1
+            except socket.error:
+                if len(data_map) > 0:
+                    logging.warn("Socket timed out, data is probably corrupted")
+                    current_amount += 1
+                else:
+                    amount, current_amount = 1, 0
+        data = b''.join(val for (_, val) in data_map.items())
+        return data, address
+    
+    def __split_read_data(self, datagram: bytes):
+        header = datagram[:4]
+        size = int(header[0] * (2 ** 8) + header[1])
+        amount = int(header[2])
+        number = int(header[3])
+        return datagram[4:], size, amount, number
 
     def send(self, binary_stream: io.BytesIO, address: str = None) -> None:
         datagram_number = 0
         if address is None:
             address = (self.host, self.port)
-        data = self.__split_data(binary_stream.read())
+        data = self.__split_send_data(binary_stream.read())
         for datagram in data:
             self.socket.sendto(datagram, address)
-            print('Sending datagram #', datagram_number, ": ", datagram)
+            logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
             datagram_number += 1
     
-    def __split_data(self, raw_data: bytes) -> str:
-        data = [ raw_data[i:i+self.buffer_size] for i in range(0, len(raw_data) - self.buffer_size, self.buffer_size) ]
-        data.append(raw_data[-(len(raw_data) % self.buffer_size):])
+    def __create_datagram(self, raw_data: bytes, amount: int, number: int, data_range: tuple):
+        datagram: bytearray = bytearray(b'')
+        size = (data_range[1] if data_range[1] else len(raw_data)) - data_range[0]
+        datagram.extend(byte(size // 256))
+        datagram.extend(byte(size % 256))
+        datagram.extend(byte(amount % 256))
+        datagram.extend(byte(number % 256))
+        datagram.extend(raw_data[data_range[0]:data_range[1]])
+        return bytes(datagram)
+    
+    def __split_send_data(self, raw_data: bytes) -> str:
+        data = []
+        max_size = min(65536, self.packet_size, len(raw_data) + 4) - 4     # TODO len(raw_data) - to be deleted
+        datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
+        if datagram_amount >= 256:
+            raise ValueError("Given data was too big, resulting in too many datagrams")
+        for i in range(0, datagram_amount - 1):
+            data.append(self.__create_datagram(raw_data, datagram_amount, i, (max_size * i, max_size * (i + 1))))
+        data.append(self.__create_datagram(raw_data, datagram_amount, datagram_amount - 1, (-(len(raw_data) % max_size), None)))
         return data
-
-    def end_session(self) -> None:
-        self.socket.close()
-
-
-class SocketInterface:
-    def __init__(self, host: str, port: str, ip_version: int):
-        self.binary_stream = io.BytesIO()
-        self.socket = Socket(host, port, ip_version)
     
-    def read(self, ret_address: bool = False) -> str or tuple:
-        data, address = self.socket.read()
-        if ret_address:
-            return self.decode(data), address
-        else:
-            return self.decode(data)
+    def connect(self) -> None:
+        if not self.socket:
+            self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
+            self.socket.settimeout(self.timeout)
 
-    def send(self, data: str, address: str = None) -> None:
-        encoded_data = self.encode(data)
-        self.__write_to_binary_stream(encoded_data)
-        self.socket.send(self.binary_stream, address)
-        self.__clear_binary_stream()
+    def disconnect(self) -> None:
+        if self.socket:
+            self.socket.close()
+            self.socket = None
     
-    def __clear_binary_stream(self) -> None:
-        self.binary_stream.seek(0)
-        self.binary_stream.truncate(0)
+    def __enter__(self):
+        self.connect()
+        return self
     
-    def __write_to_binary_stream(self, data: bytes) -> None:
-        self.binary_stream.write(data)
-        self.binary_stream.seek(0)
-
-    def encode(self, data: str) -> bytes:
-        return data.encode("ascii")
-
-    def decode(self, data: bytes) -> str:
-        return data.decode("ascii")
-    
-    def end_session(self) -> None:
-        self.binary_stream.close()
-        self.socket.end_session()
-
-
-class ServerSocket(Socket):
-    def bind(self) -> None:
-        self.socket.bind((self.host, self.port))
-
-
-class ServerSocketInterface(SocketInterface):
-    def __init__(self, host, port, ip_version):
-        super().__init__(host, port, ip_version)
-        self.socket = ServerSocket(host, port, ip_version)
-    
-    def bind(self) -> None:
-        self.socket.bind()
-    
-    def read(self) -> tuple:
-        return super().read(True)
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.disconnect()

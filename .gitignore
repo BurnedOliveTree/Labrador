@@ -1,5 +1,8 @@
 build/
 .vscode
 .dist
-.idea/
+.idea
+cmake-build-debug/
 __pycache__/
+*.log
+log/
