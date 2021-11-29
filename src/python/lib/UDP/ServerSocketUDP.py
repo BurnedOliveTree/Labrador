@@ -1,4 +1,4 @@
-from lib.SocketUDP import SocketUDP
+from lib.UDP.SocketUDP import SocketUDP
 
 class ServerSocket(SocketUDP):
     def connect(self) -> None:

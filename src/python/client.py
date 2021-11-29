@@ -1,7 +1,7 @@
 import logging, sys
 from lib.SocketInterface import SocketInterface
-from lib.ClientSocketTCP import ClientSocket as SocketTCP
-from lib.SocketUDP import SocketUDP as SocketUDP
+from lib.TCP.ClientSocketTCP import ClientSocket as SocketTCP
+from lib.UDP.SocketUDP import SocketUDP as SocketUDP
 from lib.Host import Host, get_project_root
 
 class Client(Host):
