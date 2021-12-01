@@ -1,7 +1,7 @@
-from lib.Socket import Socket
+from lib.TCP.SocketTCP import SocketTCP
 import logging, socket
 
-class ServerSocket(Socket):
+class ServerSocket(SocketTCP):
     def __init__(self, host: str, port: str):
         super().__init__(host, port)
         self.main_socket: socket.socket = None

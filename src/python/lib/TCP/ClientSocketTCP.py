@@ -1,8 +1,8 @@
-from lib.Socket import Socket
+from lib.TCP.SocketTCP import SocketTCP
 from socket import socket, AF_INET, AF_INET6, SOCK_STREAM
 import logging
 
-class ClientSocket(Socket):
+class ClientSocket(SocketTCP):
     def connect(self) -> None:
         if not self.socket:
             self.socket = socket(AF_INET6 if ":" in self.host else AF_INET, SOCK_STREAM)

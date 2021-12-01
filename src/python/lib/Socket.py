@@ -15,10 +15,10 @@ class Socket:
         data_map: dict = {}
         while current_amount < amount:
             try:
-                datagram, address = self.socket.recvfrom(65536)
+                datagram, address = self.socket.recvfrom(65535)
                 if address is not None:
                     self.client_adress = address
-                data, size, amount, number = self.__split_read_data(datagram)
+                data, _, amount, number = self.split_read_data(datagram)
                 data_map[number] = data
                 current_amount += 1
             except socket.error:
@@ -30,7 +30,7 @@ class Socket:
         data = b''.join(val for (_, val) in data_map.items())
         return data, self.client_adress
     
-    def __split_read_data(self, datagram: bytes):
+    def split_read_data(self, datagram: bytes):
         header = datagram[:struct.calcsize(self.header_types)]
         size, amount, number = struct.unpack(self.header_types, header)
         return datagram[struct.calcsize(self.header_types):], size, amount, number
@@ -41,7 +41,9 @@ class Socket:
             address = (self.host, self.port)
         data = self.__split_send_data(binary_stream.read())
         for datagram in data:
-            self.socket.sendto(datagram, address)
+            bytes_sent = 0
+            while bytes_sent < len(datagram):
+                bytes_sent += self.socket.sendto(datagram, address)
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
             datagram_number += 1
     
