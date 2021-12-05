@@ -1,32 +1,35 @@
-import io, logging, socket, struct
+import io, logging, struct
+
+from lib.RawSocket import RawSocket
 
 class Socket:
     def __init__(self, host: str, port: str):
-        self.socket: socket.socket = None
+        self.socket: RawSocket = None
         self.host: str = host
         self.port: str = port
         self.packet_size = 256
         self.client_adress = None
-        self.header_types = '!IHH'
-    
+        self.header_types = '!IHH'  
+
     def read(self):
         address = None
         amount, current_amount = 1, 0
         data_map: dict = {}
         while current_amount < amount:
-            try:
-                datagram, address = self.socket.recvfrom(65536)
-                if address is not None:
-                    self.client_adress = address
-                data, size, amount, number = self.__split_read_data(datagram)
-                data_map[number] = data
-                current_amount += 1
-            except socket.error:
+            received_data = self.socket.receive_from()
+            if received_data is False:
                 if len(data_map) > 0:
-                    logging.warn("Socket timed out, data is probably corrupted")
                     current_amount += 1
                 else:
                     amount, current_amount = 1, 0
+                continue
+            else:
+                (datagram, address) = received_data
+            if address is not None:
+                self.client_adress = address
+            data, _, amount, number = self.__split_read_data(datagram)
+            data_map[number] = data
+            current_amount += 1
         data = b''.join(val for (_, val) in data_map.items())
         return data, self.client_adress
     
@@ -54,7 +57,7 @@ class Socket:
     
     def __split_send_data(self, raw_data: bytes) -> str:
         data = []
-        max_size = min(65536, self.packet_size) - struct.calcsize(self.header_types)
+        max_size = min(self.socket.buffer_size + 1, self.packet_size) - struct.calcsize(self.header_types)
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
         if datagram_amount >= 256:
             raise ValueError("Given data was too big, resulting in too many datagrams")
@@ -63,18 +66,21 @@ class Socket:
         data.append(self.__create_datagram(raw_data, datagram_amount, datagram_amount - 1, (-(len(raw_data) % max_size), None)))
         return data
     
-    def connect(self) -> None:
-        if not self.socket:
-            self.socket = socket.socket(socket.AF_INET6 if ":" in self.host else socket.AF_INET, socket.SOCK_DGRAM)
-
-    def disconnect(self) -> None:
-        if self.socket:
-            self.socket.close()
-            self.socket = None
-    
     def __enter__(self):
-        self.connect()
+        self.socket.connect()
         return self
     
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        self.disconnect()
+        self.socket.disconnect()
+    
+    def disconnect(self):
+        self.socket.disconnect()
+
+    def __enter__(self):
+        if self.socket:
+            self.socket.connect()
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        if self.socket:
+            self.socket.disconnect()

@@ -43,16 +43,19 @@ class SocketInterface:
     def decode(self, data: bytes) -> str:
         return data.decode("ascii")
 
-    def connect(self) -> None:
+    def connect(self) -> None or bool:
         self.binary_stream = io.BytesIO()
-        self.socket.connect()
+        return self.socket.connect()
 
     def disconnect(self) -> None:
         self.binary_stream.close()
         self.socket.disconnect()
     
     def __enter__(self):
-        self.connect()
+        succeeded_bind = self.connect()
+        if succeeded_bind == False:
+            self.disconnect()
+            return None
         return self
     
     def __exit__(self, exc_type, exc_value, traceback) -> None:
