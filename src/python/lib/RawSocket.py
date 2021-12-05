@@ -36,7 +36,7 @@ class RawSocket:
             self.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
         elif (ip_version == 'ipv4' and protocol == 'UDP'):
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        elif (ip_version == 'ipv6' and protocol == 'TCP'):
+        elif (ip_version == 'ipv6' and protocol == 'UDP'):
             self.socket = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
         
     def bind(self, host, port):

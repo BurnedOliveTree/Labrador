@@ -3,6 +3,7 @@ from socket import socket, AF_INET, AF_INET6, SOCK_STREAM
 import logging
 
 from lib.RawSocket import RawSocket
+from lib.TCP.SocketTCP import SocketTCP
 
 class ClientSocket(SocketTCP):
     def connect(self) -> None:

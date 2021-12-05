@@ -27,13 +27,13 @@ class Socket:
                 (datagram, address) = received_data
             if address is not None:
                 self.client_adress = address
-            data, _, amount, number = self.__split_read_data(datagram)
+            data, _, amount, number = self.split_read_data(datagram)
             data_map[number] = data
             current_amount += 1
         data = b''.join(val for (_, val) in data_map.items())
         return data, self.client_adress
     
-    def __split_read_data(self, datagram: bytes):
+    def split_read_data(self, datagram: bytes):
         header = datagram[:struct.calcsize(self.header_types)]
         size, amount, number = struct.unpack(self.header_types, header)
         return datagram[struct.calcsize(self.header_types):], size, amount, number
@@ -55,7 +55,7 @@ class Socket:
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
-    def __split_send_data(self, raw_data: bytes) -> str:
+    def split_send_data(self, raw_data: bytes) -> str:
         data = []
         max_size = min(self.socket.buffer_size + 1, self.packet_size) - struct.calcsize(self.header_types)
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)

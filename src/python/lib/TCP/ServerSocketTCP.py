@@ -3,7 +3,7 @@ import logging
 
 from lib.RawSocket import RawSocket
 
-class ServerSocket(Socket):
+class ServerSocket(SocketTCP):
     def __init__(self, host: str, port: str):
         super().__init__(host, port)
         self.main_socket: RawSocket = None
