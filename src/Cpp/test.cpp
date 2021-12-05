@@ -11,7 +11,7 @@ int main(){
     std::cout << "Size of struct: "<< sizeof(es) << " Values: "<< es.a << " " << es.b << " " << es.c << std::endl;
     std::cout << "Uint8_t " << unsigned(test) <<std::endl;
 
-    std::vector<char> vec(msg.begin(), msg.end());
+    std::vector<char> vec = Utils::serializeString(msg);
     Utils::printVector(vec);
     std::vector<char> es_vec = Utils::addHeader(es,vec);
     Utils::printVector(es_vec);
@@ -24,8 +24,4 @@ int main(){
 
     auto es_des = Utils::deserializeStruct<Utils::ex_struct>(ser_es);
     std::cout << ntohs(es_des.a) << std::endl;
-
-
-
-
 }

@@ -2,6 +2,13 @@
 
 namespace Utils{
 
+std::vector<char> serializeString(std::string s){
+    return std::vector<char>(s.begin(), s.end());
+}
+std::string deserializeString(std::vector<char> vc){
+    return std::string(vc.begin(), vc.end());
+}
+
 std::vector<char> addHeader(char* ptr, size_t len_st, std::vector<char> vc){
     std::vector<char> result(ptr, ptr+len_st*sizeof(char));
     result.insert(result.end(), vc.begin(), vc.end());

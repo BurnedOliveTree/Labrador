@@ -31,6 +31,26 @@ T deserializeStruct(std::vector<char> vc){
     return *st;
 }
 
+std::vector<char> serializeString(std::string s);
+std::string deserializeString(std::vector<char> vc);
+
+template<typename T>
+std::vector<char> serialize(T s){
+    if(std::is_same<T, std::string>::value){
+        return serializeString(s);
+    }
+    return serializeStruct<T>(s);
+}
+
+template<typename T>
+T deserialize(T s){
+    if(std::is_same<T, std::string>::value){
+        return deserializeString(s);
+    }
+    return deserializeStruct<T>(s);
+}
+
+
 template<typename T>
 std::vector<char> addHeader(T st, std::vector<char> vc){
     size_t len_st = sizeof(st);
