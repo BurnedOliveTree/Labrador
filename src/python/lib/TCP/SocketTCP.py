@@ -3,7 +3,6 @@ from struct import calcsize
 import io, logging
 
 class SocketTCP(Socket):
-
     def read(self):
         amount, current_amount = 1, 0
         data_map: dict = {}
@@ -26,6 +25,6 @@ class SocketTCP(Socket):
         datagram_number = 0
         data = self.split_send_data(binary_stream.read())
         for datagram in data:
-            self.socket.sendall(datagram)
+            self.socket.send(datagram)
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
             datagram_number += 1
