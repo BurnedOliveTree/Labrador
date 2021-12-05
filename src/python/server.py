@@ -8,7 +8,6 @@ from threading import Thread
 
 class Server(Host):
     def __init__(self, argv: list):
-        # python3 server.py [IP_VERSION_NUMBER] [PORT_NUMBER] [ADDRESS]
         super().__init__(argv)
         self.socket = None
         self.is_quit_sent = False

@@ -6,7 +6,6 @@ from lib.Host import Host, get_project_root
 
 class Client(Host):
     def __init__(self, argv: list):
-        # python3 client.py [IP_VERSION_NUMBER] [PORT_NUMBER] [ADDRESS]
         super().__init__(argv)
         self.send_type_is_struct = False
 

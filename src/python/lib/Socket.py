@@ -8,14 +8,14 @@ class Socket:
         self.packet_size = 256
         self.client_adress = None
         self.header_types = '!IHH'
-    
+        self.buffer_size = 65535    
     def read(self):
         address = None
         amount, current_amount = 1, 0
         data_map: dict = {}
         while current_amount < amount:
             try:
-                datagram, address = self.socket.recvfrom(65535)
+                datagram, address = self.socket.recvfrom(self.buffer_size)
                 if address is not None:
                     self.client_adress = address
                 data, _, amount, number = self.split_read_data(datagram)
@@ -54,11 +54,11 @@ class Socket:
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
-    def __split_send_data(self, raw_data: bytes) -> str:
+    def split_send_data(self, raw_data: bytes) -> str:
         data = []
-        max_size = min(65536, self.packet_size) - struct.calcsize(self.header_types)
+        max_size = min(self.buffer_size + 1, self.packet_size) - struct.calcsize(self.header_types)
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
-        if datagram_amount >= 256:
+        if datagram_amount >= self.packet_size:
             raise ValueError("Given data was too big, resulting in too many datagrams")
         for i in range(0, datagram_amount - 1):
             data.append(self.__create_datagram(raw_data, datagram_amount, i, (max_size * i, max_size * (i + 1))))
