@@ -10,7 +10,7 @@ class RawSocket:
         elif ip_version is not None and protocol is not None:
             self.create_socket(ip_version, protocol)
     
-    def receive_from(senodelf):
+    def receive_from(self):
         try:
             self.socket.recvfrom(self.buffer_size)
         except socket.error as err:
