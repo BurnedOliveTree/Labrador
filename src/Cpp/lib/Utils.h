@@ -8,6 +8,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <optional>
+#include <functional>
+
 
 namespace Utils{
 
@@ -34,18 +37,22 @@ T deserializeStruct(std::vector<char> vc){
 std::vector<char> serializeString(std::string s);
 std::string deserializeString(std::vector<char> vc);
 
+
+
 template<typename T>
 std::vector<char> serialize(T s){
-    if(std::is_same<T, std::string>::value){
+    if(std::is_same<T, std::string>::value || std::is_same<T, std::string>::value ){
         return serializeString(s);
     }
     return serializeStruct<T>(s);
 }
 
 template<typename T>
-T deserialize(T s){
+T deserialize(std::vector<char> s){
     if(std::is_same<T, std::string>::value){
-        return deserializeString(s);
+        std::string buf = deserializeString(s);
+        T* buff = reinterpret_cast<T*>(&buf);
+        return *buff;
     }
     return deserializeStruct<T>(s);
 }
@@ -66,4 +73,18 @@ std::pair<std::vector<char>,std::vector<char>> divideHeader(size_t h_len, std::v
 
 void printVector(std::vector<char> vc);
 
+
+
+
+
+
+// Following is used for deception only. 
+template<typename T = std::string>
+std::vector<char> serializeString(T s){
+    return std::vector<char>();
+}
+template<typename T = std::string>
+T deserializeString(std::vector<char> vc){
+    return T();
+}
 }
