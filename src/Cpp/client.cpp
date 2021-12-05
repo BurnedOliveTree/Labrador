@@ -1,13 +1,14 @@
 #include "lib/SocketUDP.h"
 #include "lib/SocketTCP.h"
-#include "lib/Client.h"
+#include "lib/Host.h"
 #include <iostream>
 #include <vector>
 
 int main(int argc, char* argv[])
 // zad1
 { 
-    std::vector<std::string> messages{"abc1", "0001", "hello", "world", "QUIT", "Hmmm?"};
+    // std::vector<std::string> messages{"abc1", "0001", "hello", "world", "QUIT", "Hmmm?"};
+    std::vector<SimpleStruct> messages{{300, 2,2}, {20, 1,50}}; 
     std::string ip = "127.0.0.1";
     int port = 2137;
     if(argc > 2){
@@ -16,15 +17,17 @@ int main(int argc, char* argv[])
     }
     std::cout << ip << " " << port << std::endl;
     SocketInterface* sockint;
-    Client* cl;
+    Host* cl;
     try{
-        // sockint = new SocketUDP(ip, port, false);
-        sockint = new SocketTCP(ip, port, false);
-        cl = new Client(sockint);
+        sockint = new SocketUDP(ip, port, false);
+        // sockint = new SocketTCP(ip, port, false);
+        cl = new Host(sockint);
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
     }
-    for(std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
+    // for(std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
+    for(std::vector<SimpleStruct>::iterator it = messages.begin(); it != messages.end(); ++it) {
+
         try{
             cl->Send(*it);
             } catch (const std::exception& e){
@@ -32,6 +35,7 @@ int main(int argc, char* argv[])
             }
     }
     delete cl;
+    delete sockint;
 }
 
 // int main(int argc, char* argv[])
@@ -46,7 +50,7 @@ int main(int argc, char* argv[])
 //     }
 //     std::cout << ip << " " << port << std::endl;
 //     try{
-//         Client cl(ip, port);
+//         Host cl(ip, port);
     
 //     int iter = 0;
 //     while (1) {
@@ -77,7 +81,7 @@ int main(int argc, char* argv[])
 //     }
 //     std::cout << ip << " " << port << std::endl;
 //     try{
-//         Client cl(ip, port);
+//         Host cl(ip, port);
 //         cl.SendStruct(s);
 //     }  
 //     catch (const std::exception& e){

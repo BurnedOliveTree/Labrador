@@ -5,6 +5,7 @@ namespace Utils{
 std::vector<char> serializeString(std::string s){
     return std::vector<char>(s.begin(), s.end());
 }
+
 std::string deserializeString(std::vector<char> vc){
     return std::string(vc.begin(), vc.end());
 }

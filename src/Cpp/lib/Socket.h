@@ -35,9 +35,8 @@ public:
     void Listen();
     void Write(std::vector<char> msg);
     void Send(std::vector<char> msg);
-    void SocketSend(std::vector<char> msg);
     std::vector<char> Receive();
-    std::vector<char> Read();
+    std::vector<char> Read(size_t n_bytes);
 
 };
 

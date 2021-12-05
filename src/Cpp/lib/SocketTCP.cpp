@@ -10,10 +10,12 @@ SocketTCP::SocketTCP(std::string ip, int port,  bool is_serv): sock(ip,port,is_s
     }
 }
 
-void SocketTCP::Send(std::string msg){
-    sock.Send(std::vector<char>(msg.begin(), msg.end()));
+void SocketTCP::Send(std::vector<char> msg){
+    PacketHeader ph = {htons(msg.size()), 0, 0};
+    sock.Write(Utils::addHeader(Utils::serializeStruct<PacketHeader>(ph), msg));
 }
 
 std::vector<char> SocketTCP::Receive(){
-    return sock.Read();
+    PacketHeader ph = Utils::deserializeStruct<PacketHeader>(sock.Read(sizeof(PacketHeader)));
+    return sock.Read(ntohs(ph.length));
 }
