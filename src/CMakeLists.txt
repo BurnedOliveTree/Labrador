@@ -34,6 +34,12 @@ add_library(
     Cpp/lib/Exit.cpp
 )
 
+add_library(
+    Utils
+    Cpp/lib/Utils.h
+    Cpp/lib/Utils.cpp
+)
+
 
 
 add_executable(ClientC Cpp/client.cpp)
@@ -46,5 +52,6 @@ target_link_libraries(ServerC PUBLIC SocketInterface )
 target_link_libraries(ServerC PUBLIC ServerCpp )
 target_link_libraries(ServerC PUBLIC SocketCpp )
 target_link_libraries(ServerC PUBLIC ExitCpp )
-
+add_executable(Test Cpp/test.cpp)
+target_link_libraries(Test PUBLIC Utils)
 
