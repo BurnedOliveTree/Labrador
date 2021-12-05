@@ -38,10 +38,14 @@ class SocketInterface:
         self.binary_stream.seek(0)
 
     def encode(self, data: str) -> bytes:
-        return data.encode("ascii")
+        if data:
+            return data.encode("ascii")
+        return b""
 
     def decode(self, data: bytes) -> str:
-        return data.decode("ascii")
+        if data:
+            return data.decode("ascii")
+        return ""
 
     def connect(self) -> None or bool:
         self.binary_stream = io.BytesIO()

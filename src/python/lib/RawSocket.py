@@ -3,7 +3,7 @@ import socket, logging
 class RawSocket:
     def __init__(self, ip_version = None, protocol = None, created_socket = None):
         self.buffer_size = 65535 
-        self.socket: socket.socket
+        self.socket: socket.socket = None
         self.default_timeout = 10
         if created_socket is not None: 
             self.socket = created_socket
@@ -53,10 +53,19 @@ class RawSocket:
         return self.socket.accept()
     
     def receive(self, size):
-        return self.socket.recv(size)
+        try:
+            return self.socket.recv(size)
+        except socket.error as err:
+            logging.warn(f"Message: {err}")
+            return False
     
     def send(self, datagram):
-       return self.socket.send(datagram)
+        bytes_sent = 0
+        while bytes_sent < len(datagram):
+            bytes_sent += self.socket.send(datagram)
+    
+    def sendall(self, data):
+        self.socket.sendall(data)
     
     def sendto(self, datagram, address):
         return self.socket.sendto(datagram, address)

@@ -4,7 +4,6 @@ from subprocess import check_output
 
 class Host:
     def __init__(self, argv: list):
-        # python3 [FILENAME] [IP_VERSION_NUMBER] [PORT_NUMBER] [ADDRESS]
         host, port, ipv, protocol = self.__parse_args(argv)
         self.ip_version = ipv if ipv is not None and ipv in [4, 6] else 4
         self.host = host if host is not None else self.get_default_host_address(self.ip_version)

@@ -1,5 +1,3 @@
-from lib.Socket import Socket
-from socket import socket, AF_INET, AF_INET6, SOCK_STREAM
 import logging
 
 from lib.RawSocket import RawSocket

@@ -12,7 +12,6 @@ from lib.UDP.ServerSocketUDP import ServerSocket as SocketUDP
 
 class Server(Host):
     def __init__(self, argv: list):
-        # python3 server.py [IP_VERSION_NUMBER] [PORT_NUMBER] [ADDRESS]
         super().__init__(argv)
         self.socketInterface = None
         self.is_quit_sent = False

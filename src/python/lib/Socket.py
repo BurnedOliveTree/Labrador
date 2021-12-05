@@ -7,7 +7,7 @@ class Socket:
         self.socket: RawSocket = None
         self.host: str = host
         self.port: str = port
-        self.packet_size = 256
+        self.packet_size = 60000
         self.client_adress = None
         self.header_types = '!IHH'  
 
@@ -32,6 +32,7 @@ class Socket:
             current_amount += 1
         data = b''.join(val for (_, val) in data_map.items())
         return data, self.client_adress
+
     
     def split_read_data(self, datagram: bytes):
         header = datagram[:struct.calcsize(self.header_types)]
