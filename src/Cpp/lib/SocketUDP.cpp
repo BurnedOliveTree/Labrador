@@ -6,11 +6,28 @@ SocketUDP::SocketUDP(std::string ip, int port,  bool is_serv): sock(ip,port,is_s
     }
 }
 
-void SocketUDP::Send(std::string msg){
-    sock.Send(std::vector<char>(msg.begin(), msg.end()));
+void SocketUDP::Send(std::vector<char> msg){
+    std::vector<std::vector<char>> splited_msg = Utils::splitData(msg, MAX_PACKET_SIZE-4);
+    for(int i = 0; i < splited_msg.size(); i++)
+    {
+        Utils::printVector(splited_msg[i]);
+        PacketHeader ph = {htons(splited_msg[i].size()), splited_msg.size(), i};
+        sock.Send(Utils::addHeader(Utils::serializeStruct<PacketHeader>(ph), splited_msg[i]));
+    }
 }
 
 std::vector<char> SocketUDP::Receive(){
-    return sock.Receive();
+    std::vector<char> result, rec;
+    PacketHeader ph;
+    do{
+        rec = sock.Receive();
+        Utils::printVector(rec);
+        auto [hd, msg] = Utils::divideHeader(4, rec);
+        //Utils::printVector(msg);
+        ph = Utils::deserializeStruct<PacketHeader>(hd);
+        result.insert(result.end(), msg.begin(), msg.end());
+    } while(ph.max_packet-ph.curr_packet>1);
+    return result;
 }
+
 

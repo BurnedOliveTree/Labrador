@@ -1,18 +1,17 @@
 #pragma once
 
+#include <unistd.h>
 #include <stdio.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
 #include <iostream>
 #include <vector>
 #include <arpa/inet.h>
 
 
-constexpr int max_buffer_size = 32;
+constexpr int MAX_PACKET_SIZE = 7;
 
 class Socket{
     struct sockaddr_in desc_4;
@@ -20,6 +19,7 @@ class Socket{
     struct sockaddr* self_addr ;
     struct sockaddr dest_addr ;
     bool is_server;
+    bool is_datagram;
 
     socklen_t socket_len;
     socklen_t dest_len;
@@ -35,12 +35,12 @@ public:
     void Write(std::vector<char> msg);
     void Send(std::vector<char> msg);
     std::vector<char> Receive();
-    std::vector<char> Read();
+    std::vector<char> Read(size_t n_bytes);
 
 };
 
-struct SimpStruct{
-    int a;
-    int b;
-    long c;
+struct SockHeader{
+    int16_t length;
+    int8_t packet_max;
+    int8_t packet_id;
 };
