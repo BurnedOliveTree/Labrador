@@ -6,7 +6,6 @@ from lib.Host import Host, get_project_root
 
 class Client(Host):
     def __init__(self, argv: list):
-        # python3 client.py [IP_VERSION_NUMBER] [PORT_NUMBER] [ADDRESS]
         super().__init__(argv)
         self.send_type_is_struct = False
 
@@ -37,8 +36,17 @@ class Client(Host):
     def get_user_data(self) -> str:
         if self.send_type_is_struct:
             return input("Press Enter to send struct ort type 'QUIT': ")
-        return input("Data: ")
+        data = input("Data: ")
+        if data == "":
+            return self.get_long_text()
+        return data
     
+    def get_long_text(self):
+        file = open(get_project_root() + '/src/python/text.txt', mode='r')
+        text = file.read()
+        file.close()
+        return text
+
     def get_input_type(self) -> bool:
         input_type = input("Choose type of sending data: \n 1.string\n 2.struct\nYour choice: ")
         try:
@@ -57,3 +65,4 @@ if __name__ == "__main__":
         level=logging.DEBUG
     )
     Client(sys.argv).connect()
+    

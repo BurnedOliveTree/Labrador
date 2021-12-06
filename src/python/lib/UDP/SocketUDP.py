@@ -4,9 +4,8 @@ import logging
 class SocketUDP(Socket):
     def __init__(self, host: str, port: str):
         super().__init__(host, port)
-        self.timeout = 10
     
-    def connect(self) -> None:
-        super().connect()
+    def create_UDP_socket(self) -> None:
+        self.socket = self.create_socket("ipv6" if ":" in self.host else "ipv4", "UDP")
         logging.info('Using UDP socket')
-        self.socket.settimeout(self.timeout)
+        self.socket.enable_timeout()
