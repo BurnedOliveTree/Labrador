@@ -68,7 +68,9 @@ class RawSocket:
         self.socket.sendall(data)
     
     def sendto(self, datagram, address):
-        return self.socket.sendto(datagram, address)
+        bytes_sent = 0
+        while bytes_sent < len(datagram):
+            bytes_sent += self.socket.sendto(datagram, address)
     
     def __enter__(self):
         self.connect()

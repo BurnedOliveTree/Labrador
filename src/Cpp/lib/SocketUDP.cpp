@@ -8,10 +8,10 @@ SocketUDP::SocketUDP(std::string ip, int port,  bool is_serv): sock(ip,port,is_s
 
 void SocketUDP::Send(std::vector<char> msg){
     std::vector<std::vector<char>> splited_msg = Utils::splitData(msg, MAX_PACKET_SIZE-4);
-    for(int i = 0; i < splited_msg.size(); i++)
+    for(uint8_t i = 0; i < splited_msg.size(); i++)
     {
         Utils::printVector(splited_msg[i]);
-        PacketHeader ph = {htons(splited_msg[i].size()), splited_msg.size(), i};
+        PacketHeader ph = {htons(splited_msg[i].size()), static_cast<uint8_t>(splited_msg.size()), i};
         sock.Send(Utils::addHeader(Utils::serializeStruct<PacketHeader>(ph), splited_msg[i]));
     }
 }

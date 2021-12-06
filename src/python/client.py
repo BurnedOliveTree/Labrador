@@ -10,17 +10,17 @@ class Client(Host):
         self.send_type_is_struct = False
 
     def connect(self) -> None:
-        self.get_input_type()
+        self.__get_input_type()
         socket = self.__get_socket()
         received_data = None
         with SocketInterface(socket) as socket:
             print("Will send data to ", self.host, ":", self.port)
-            data = self.get_user_data()
+            data = self.__get_user_data()
             while data != "QUIT":
                 socket.send(data, is_struct=self.send_type_is_struct)
-                received_data = socket.read()
-                print('Received data: ', repr(received_data))
-                data = self.get_user_data()
+                # received_data = socket.read()
+                # print('Received data: ', repr(received_data))
+                data = self.__get_user_data()
             else:
                 socket.send(data)
         print('Client finished')
@@ -33,21 +33,21 @@ class Client(Host):
         else:
             raise ValueError(f'invalid protocol type: {self.protocol} please choose from UDP or TCP')
 
-    def get_user_data(self) -> str:
+    def __get_user_data(self) -> str:
         if self.send_type_is_struct:
-            return input("Press Enter to send struct ort type 'QUIT': ")
+            return input("Press Enter to send struct or type 'QUIT': ")
         data = input("Data: ")
         if data == "":
-            return self.get_long_text()
+            return self.__get_long_text()
         return data
     
-    def get_long_text(self):
+    def __get_long_text(self):
         file = open(get_project_root() + '/src/python/text.txt', mode='r')
         text = file.read()
         file.close()
         return text
 
-    def get_input_type(self) -> bool:
+    def __get_input_type(self) -> bool:
         input_type = input("Choose type of sending data: \n 1.string\n 2.struct\nYour choice: ")
         try:
             option = int(input_type)
