@@ -81,23 +81,19 @@ void Socket::Listen(){
 }
 
 std::vector<char> Socket::Read(size_t n_bytes){
-    std::cout << "Accepted " << msgsock << std::endl;
-    std::vector<char> buffer(max_buffer_size);
+    std::vector<char> buffer(MAX_PACKET_SIZE);
     int rval = 0, rall = 0;
     if (msgsock < 0) {
         throw std::runtime_error("Couldn't accept connection");
     }
     do {
-        if ((rval = recv(msgsock,buffer.data()+rall, n_bytes-rall, 0)) == -1) {
+        if ((rval = read(msgsock,buffer.data()+rall, n_bytes-rall)) == -1) {
             throw std::runtime_error("Error while reading stream");
         }
         rall += rval;
-        std::cout << "READ 1stCHar: "<< buffer.data()[0] << ", Rall " << rall << std::endl;
 
     } while (n_bytes-rall>0);
-    std::cout << "Here" << std::endl;
     buffer.resize(rall);
-    std::cout << "Here" << std::endl;
     return buffer;
 }
 
@@ -106,8 +102,6 @@ void Socket::Write(std::vector<char> msg){
     socklen_t dst_len;
     int sall = 0, sval = 0;
     int bsize = msg.size();
-    std::cout << "WRITE ROZMIAR: "<< bsize << std::endl;
-    std::cout << "WRITE 1stCHar: "<< msg.data()[0] << std::endl;
     do{
         if((sval = send(sock, msg.data()+sall, bsize-sall, 0)) < 0){
             throw std::runtime_error("Couldn't write message to stream");
@@ -128,8 +122,6 @@ void Socket::Send(std::vector<char> msg){
         dst_len = socket_len;
     }
     int bsize = msg.size();
-    std::cout << "SEND ROZMIAR: "<< bsize << std::endl;
-    std::cout << "SEND 1stCHar: "<< msg.data()[0] << std::endl;
     if(sendto(sock, msg.data(), bsize, 0, dst, dst_len ) < 0)
         {
             throw std::runtime_error("Couldn't send message to server");
@@ -137,7 +129,7 @@ void Socket::Send(std::vector<char> msg){
 }
 
 std::vector<char> Socket::Receive(){
-    std::vector<char> buffer(max_buffer_size);
+    std::vector<char> buffer(MAX_PACKET_SIZE);
     struct sockaddr* dst;
     socklen_t* dst_len;
     if(is_server){
@@ -155,7 +147,5 @@ std::vector<char> Socket::Receive(){
             throw std::runtime_error("Couldn't receive message from server");
         }
     buffer.resize(result);
-    std::cout << "RECEIVE LEN: "<< result << std::endl;
-    std::cout << "RECEIVE 1stCHar: "<< buffer.data()[0] << std::endl;
     return buffer;
 }

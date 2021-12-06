@@ -27,4 +27,13 @@ int main(){
 
     auto zwyciestwo = Utils::deserializeString(vec1);
     std::cout << zwyciestwo << std::endl;
+
+    msg = "ab";//cdefghijklmnopqrstuwyz0";
+    std::vector<char> vec2 = Utils::serializeString(msg);
+    Utils::printVector(vec2);
+    std::vector<std::vector<char>> splited = Utils::splitData(vec2, 4);
+    for(std::vector<std::vector<char>>::iterator it = splited.begin(); it!=splited.end(); it++)
+    {
+        Utils::printVector(*it);
+    }
 }

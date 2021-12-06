@@ -19,8 +19,8 @@ int main(int argc, char* argv[])
     SocketInterface* sockint;
     Host* cl;
     try{
-        sockint = new SocketUDP(ip, port, false);
-        // sockint = new SocketTCP(ip, port, false);
+        // sockint = new SocketUDP(ip, port, false);
+        sockint = new SocketTCP(ip, port, false);
         cl = new Host(sockint);
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;

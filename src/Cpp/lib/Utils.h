@@ -49,4 +49,6 @@ std::vector<char> addHeader(std::vector<char> st, std::vector<char> vc);
 std::pair<std::vector<char>,std::vector<char>> divideHeader(size_t h_len, std::vector<char> vc);
 void printVector(std::vector<char> vc);
 
+std::vector<std::vector<char>> splitData(std::vector<char>data, size_t maxsize);
+
 }

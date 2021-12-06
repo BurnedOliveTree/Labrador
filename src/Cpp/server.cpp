@@ -10,7 +10,8 @@
 
 void listener(Host* serv){
     std::variant<std::string, SimpleStruct> msg;
-    while (true){
+    int how_many_msgs = 5;
+    while(true){
         try{
             msg = serv->Receive();
         } catch (const std::exception& e){
@@ -37,8 +38,8 @@ int main(int argc, char* argv[])
     SocketInterface* sockint;
     Host* serv; 
     try{
-        sockint = new SocketUDP(ip, port, true);
-        // sockint = new SocketTCP(ip, port, true);
+        // sockint = new SocketUDP(ip, port, true);
+        sockint = new SocketTCP(ip, port, true);
         serv = new Host(sockint);
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;

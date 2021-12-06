@@ -2,8 +2,6 @@
 
 #include "SocketInterface.h"
 
-constexpr size_t MAX_SIZE = 512;
-
 class SocketUDP: public SocketInterface{
     Socket sock;
 public:

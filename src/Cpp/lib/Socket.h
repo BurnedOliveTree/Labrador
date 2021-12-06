@@ -1,18 +1,17 @@
 #pragma once
 
+#include <unistd.h>
 #include <stdio.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
 #include <iostream>
 #include <vector>
 #include <arpa/inet.h>
 
 
-constexpr int max_buffer_size = 32;
+constexpr int MAX_PACKET_SIZE = 7;
 
 class Socket{
     struct sockaddr_in desc_4;
