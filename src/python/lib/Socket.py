@@ -67,21 +67,16 @@ class Socket:
         data.append(self.__create_datagram(raw_data, datagram_amount, datagram_amount - 1, ((datagram_amount - 1) * max_size, None)))
         return data
     
-    def __enter__(self):
-        self.socket.connect()
-        return self
-    
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
-        self.socket.disconnect()
+    def connect(self):
+        raise NotImplementedError("This method is an interface and shouldn't be called directly")
     
     def disconnect(self):
-        self.socket.disconnect()
+        if self.socket:
+            self.socket.disconnect()
 
     def __enter__(self):
-        if self.socket:
-            self.socket.connect()
+        self.connect()
         return self
     
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        if self.socket:
-            self.socket.disconnect()
+        self.disconnect()

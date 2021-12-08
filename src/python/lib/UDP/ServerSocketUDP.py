@@ -1,8 +1,7 @@
 from lib.UDP.SocketUDP import SocketUDP
 
 class ServerSocket(SocketUDP):
-
-    def establish_connection(self) -> None:
-        super().create_UDP_socket()
-        self.bind(self.socket, self.host, self.port)
+    def connect(self) -> None:
+        super().connect()
+        self.socket.bind(self.host, self.port)
     

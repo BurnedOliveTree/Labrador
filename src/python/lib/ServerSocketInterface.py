@@ -1,4 +1,3 @@
-
 from lib.SocketInterface import SocketInterface
 
 class ServerSocketInterface(SocketInterface):

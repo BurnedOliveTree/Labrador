@@ -31,7 +31,10 @@ class Server(Host):
                     # self.socket.send(data, host, is_struct)
                 else:
                     print("Received a signal to end, exiting now...")
+            else:
+                print("Connecting failed, exiting now...")
         self.socket = None
+        print('Server finished')
     
     def __get_socket(self):
         if self.protocol == 'UDP':

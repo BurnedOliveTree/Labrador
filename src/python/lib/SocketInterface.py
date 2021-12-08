@@ -56,8 +56,7 @@ class SocketInterface:
         self.socket.disconnect()
     
     def __enter__(self):
-        succeeded_bind = self.connect()
-        if succeeded_bind == False:
+        if self.connect() == False:
             self.disconnect()
             return None
         return self

@@ -12,17 +12,19 @@ class Client(Host):
     def connect(self) -> None:
         self.__get_input_type()
         socket = self.__get_socket()
-        received_data = None
         with SocketInterface(socket) as socket:
-            print("Will send data to ", self.host, ":", self.port)
-            data = self.__get_user_data()
-            while data != "QUIT":
-                socket.send(data, is_struct=self.send_type_is_struct)
-                # received_data = socket.read()
-                # print('Received data: ', repr(received_data))
+            if socket is not None:
+                print("Will send data to ", self.host, ":", self.port)
                 data = self.__get_user_data()
+                while data != "QUIT":
+                    socket.send(data, is_struct=self.send_type_is_struct)
+                    # received_data = socket.read()
+                    # print('Received data: ', repr(received_data))
+                    data = self.__get_user_data()
+                else:
+                    socket.send(data)
             else:
-                socket.send(data)
+                print('Failed to connect, exiting now...')
         print('Client finished')
     
     def __get_socket(self):

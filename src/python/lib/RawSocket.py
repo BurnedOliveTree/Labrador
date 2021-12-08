@@ -9,25 +9,7 @@ class RawSocket:
             self.socket = created_socket
         elif ip_version is not None and protocol is not None:
             self.create_socket(ip_version, protocol)
-    
-    def receive_from(self):
-        try:
-            self.socket.recvfrom(self.buffer_size)
-        except socket.error as err:
-            logging.warn(f"Socket timed out, data is probably corrupted. Message: {err}")
-            return False
-    
-    def disconnect(self) -> None:
-        if self.socket:
-            self.socket.close()
-            self.socket = None
-    
-    def connect(self, host, port):
-        if self.socket:
-            self.socket.connect((host, port))
-    
-    def enable_timeout(self):
-        self.socket.settimeout(self.default_timeout)
+        self.enable_timeout()
     
     def create_socket(self, ip_version, protocol):
         if (ip_version == 'ipv4' and protocol == 'TCP'):
@@ -38,6 +20,9 @@ class RawSocket:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         elif (ip_version == 'ipv6' and protocol == 'UDP'):
             self.socket = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+    
+    def enable_timeout(self):
+        self.socket.settimeout(self.default_timeout)
         
     def bind(self, host, port):
         try:
@@ -50,7 +35,11 @@ class RawSocket:
         return self.socket.listen(num_workers)
     
     def accept(self):
-        return self.socket.accept()
+        try:
+            return self.socket.accept()
+        except socket.error as message:
+            logging.critical(f"Accept failed. Message {message}")
+            return False
     
     def receive(self, size):
         try:
@@ -59,18 +48,34 @@ class RawSocket:
             logging.warn(f"Message: {err}")
             return False
     
+    def receive_from(self):
+        try:
+            self.socket.recvfrom(self.buffer_size)
+        except socket.error as err:
+            logging.warn(f"Socket timed out, data is probably corrupted. Message: {err}")
+            return False
+    
     def send(self, datagram):
         bytes_sent = 0
         while bytes_sent < len(datagram):
             bytes_sent += self.socket.send(datagram)
     
-    def sendall(self, data):
-        self.socket.sendall(data)
-    
     def sendto(self, datagram, address):
         bytes_sent = 0
         while bytes_sent < len(datagram):
             bytes_sent += self.socket.sendto(datagram, address)
+    
+    def sendall(self, data):
+        self.socket.sendall(data)
+        
+    def connect(self, host, port):
+        if self.socket:
+            self.socket.connect((host, port))
+
+    def disconnect(self) -> None:
+        if self.socket:
+            self.socket.close()
+            self.socket = None
     
     def __enter__(self):
         self.connect()
