@@ -6,11 +6,13 @@ from lib.Host import Host, get_project_root
 from lib.ServerSocketInterface import ServerSocketInterface
 from lib.TCP.ServerSocketTCP import ServerSocket as SocketTCP
 from lib.UDP.ServerSocketUDP import ServerSocket as SocketUDP
+from lib.Poll import Poll
 
 class Server(Host):
     def __init__(self, argv: list):
         super().__init__(argv)
         self.socket = None
+        self.poll = Poll()
         self.is_quit_sent = False
         signal.signal(signal.SIGINT, self.__on_sig_int)
 
@@ -20,16 +22,19 @@ class Server(Host):
         socket = self.__get_socket()
         with ServerSocketInterface(socket) as self.socket:
             if self.socket is not None:
+                self.poll.register(self.socket)
                 while not self.is_quit_sent:
-                    data, host, is_struct = self.socket.read()
-                    if host is not None:
-                        print(f"Receiving data from: {host}")
-                    print(f"Received data: {data}")
-                    if data == 'QUIT':
-                        self.is_quit_sent = True
-                        # continue
-                    # self.socket.send(data, host, is_struct)
+                    for socket in self.poll.read():
+                        data, host, is_struct = socket.read()
+                        if host is not None:
+                            print(f"Receiving data from: {host}")
+                        print(f"Received data: {data}")
+                        if data == 'QUIT':
+                            self.is_quit_sent = True
+                            # continue
+                        # self.socket.send(data, host, is_struct)
                 else:
+                    self.poll.unregister(self.socket)
                     print("Received a signal to end, exiting now...")
             else:
                 print("Connecting failed, exiting now...")
