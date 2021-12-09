@@ -2,13 +2,17 @@ from io import BytesIO
 from lib.Socket import Socket
 from struct import pack, unpack
 
+from lib.RawSocket import RawSocket
+
 class SocketInterface:
     def __init__(self, socket: Socket):
         self.binary_stream = None
         self.socket = socket
     
-    def read(self, ret_address: bool = False) -> str or tuple:
-        data, address = self.socket.read()
+    def read(self, ret_address: bool = False, socket: RawSocket = None) -> str or tuple:
+        if not socket:
+            socket = self.socket
+        data, address = socket.read()
         if data:
             if data[0] == 1:
                 is_struct = True
@@ -22,7 +26,9 @@ class SocketInterface:
                 return decoded_data
         raise ValueError('Data not received')
 
-    def send(self, data: str, address: str = None, is_struct = False) -> None:
+    def send(self, data: str, address: str = None, is_struct = False, socket: RawSocket = None) -> None:
+        if not socket:
+            socket = self.socket
         if is_struct:
             encoded_data = b'\1' + pack('!HBB', 1, 2, 3)  # TODO this needs to not be hardcoded
         else:
