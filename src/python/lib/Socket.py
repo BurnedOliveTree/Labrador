@@ -43,7 +43,7 @@ class Socket:
         datagram_number = 0
         if address is None:
             address = (self.host, self.port)
-        data = self.__split_send_data(binary_stream.read())
+        data = self.__split_send_data(binary_stream.read(), self.socket.buffer_size)
         for datagram in data:
             self.socket.sendto(datagram, address)
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
@@ -56,9 +56,9 @@ class Socket:
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
-    def split_send_data(self, raw_data: bytes) -> str:
+    def split_send_data(self, raw_data: bytes, buffer_size: int) -> str:
         data = []
-        max_size = min(self.socket.buffer_size + 1, self.packet_size) - struct.calcsize(self.header_types)
+        max_size = min(buffer_size + 1, self.packet_size) - struct.calcsize(self.header_types)
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
         if datagram_amount >= 256 ** struct.calcsize(self.header_types[2]):
             raise ValueError("Given data was too big, resulting in too many datagrams")

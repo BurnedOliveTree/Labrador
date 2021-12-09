@@ -27,15 +27,15 @@ class SocketInterface:
             encoded_data = b'\1' + pack('!HBB', 1, 2, 3)  # TODO this needs to not be hardcoded
         else:
             encoded_data = b'\0' + self.encode(data)
-        self.__write_to_binary_stream(encoded_data)
+        self.write_to_binary_stream(encoded_data)
         self.socket.send(self.binary_stream, address)
-        self.__clear_binary_stream()
+        self.clear_binary_stream()
     
-    def __clear_binary_stream(self) -> None:
+    def clear_binary_stream(self) -> None:
         self.binary_stream.seek(0)
         self.binary_stream.truncate(0)
     
-    def __write_to_binary_stream(self, data: bytes) -> None:
+    def write_to_binary_stream(self, data: bytes) -> None:
         self.binary_stream.write(data)
         self.binary_stream.seek(0)
 
@@ -50,7 +50,8 @@ class SocketInterface:
         return ""
 
     def connect(self) -> None or bool:
-        self.binary_stream = BytesIO()
+        if not self.binary_stream:
+            self.binary_stream = BytesIO()
         return self.socket.connect()
 
     def disconnect(self) -> None:
