@@ -25,14 +25,16 @@ class Server(Host):
                 self.poll.register(self.socket)
                 while not self.is_quit_sent:
                     for socket in self.poll.read():
-                        data, host, is_struct = socket.read()
-                        if host is not None:
-                            print(f"Receiving data from: {host}")
-                        print(f"Received data: {data}")
-                        if data == 'QUIT':
-                            self.is_quit_sent = True
-                            # continue
-                        # self.socket.send(data, host, is_struct)
+                        sockets_answer = socket.read()
+                        for answer in sockets_answer:
+                            data, host, is_struct = answer
+                            if host is not None:
+                                print(f"Receiving data from: {host}")
+                            print(f"Received data: {data}")
+                            if data == 'QUIT':
+                                self.is_quit_sent = True
+                                # continue
+                            # self.socket.send(data, host, is_struct)
                 else:
                     self.poll.unregister(self.socket)
                     print("Received a signal to end, exiting now...")
