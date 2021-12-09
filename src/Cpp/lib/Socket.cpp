@@ -50,6 +50,7 @@ Socket::Socket(std::string ip, int port, bool is_serv,bool is_UDP){
 
 Socket::~Socket(){
     shutdown(sock, SHUT_RDWR);
+    shutdown(msgsock, SHUT_RDWR);
 }
 
 void Socket::Bind(){
