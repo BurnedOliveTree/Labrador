@@ -11,6 +11,7 @@ class ServerSocket(SocketTCP):
         self.poll = poll()
         self.main_socket: RawSocket = None
         self.sockets: dict[int, RawSocket] = {}
+        self.server_num_workers = 5
 
     def read(self):
         sockets_answer = []
@@ -26,7 +27,7 @@ class ServerSocket(SocketTCP):
             self.main_socket = RawSocket("ipv6" if ":" in self.host else "ipv4", "TCP")
             if self.main_socket.bind(self.host, self.port) == False:
                 return False
-            self.main_socket.listen(1)  # TODO change this magic number
+            self.main_socket.listen(self.server_num_workers)
         accept_returns = self.main_socket.accept()
         if accept_returns == False:
             return False
