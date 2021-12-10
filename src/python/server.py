@@ -3,9 +3,12 @@ from threading import Thread
 from pynput.keyboard import Key, Listener
 
 from lib.Host import Host, get_project_root
-from lib.TCP.ServerSocketInterfaceTCP import ServerSocketInterfaceTCP as SocketInterface
+from lib.TCP.ServerSocketInterfaceTCP import ServerSocketInterfaceTCP as SocketInterfaceTCP
+from lib.ServerSocketInterface import ServerSocketInterface as SocketInterfaceUDP
 from lib.TCP.ServerSocketTCP import ServerSocket as SocketTCP
 from lib.UDP.ServerSocketUDP import ServerSocket as SocketUDP
+from lib.Socket import Socket
+from lib.SocketInterface import SocketInterface
 
 class Server(Host):
     def __init__(self, argv: list):
@@ -17,7 +20,7 @@ class Server(Host):
     def listen(self) -> None:
         print("Listening on ", self.host, ":", self.port)
         socket = self.__get_socket()
-        with SocketInterface(socket) as self.socket:
+        with self.__get_socket_interface(socket) as self.socket:
             if self.socket is not None:
                 self.__connect()
                 while not self.is_quit_sent:
@@ -42,13 +45,21 @@ class Server(Host):
         while not self.is_quit_sent:
             self.socket.connect()
     
-    def __get_socket(self):
+    def __get_socket(self) -> Socket:
         if self.protocol == 'UDP':
             return SocketUDP(self.host, self.port)
         elif self.protocol == 'TCP':
             return SocketTCP(self.host, self.port)
         else:
             raise ValueError(f'invalid protocol type: {self.protocol} please choose from UDP or TCP')
+    
+    def __get_socket_interface(self, socket: Socket) -> SocketInterface:
+        if self.protocol == 'UDP':
+            return SocketInterfaceUDP(socket)
+        elif self.protocol == 'TCP':
+            return SocketInterfaceTCP(socket)
+        else:
+            raise ValueError(f'invalid protocol type: {self.protocol} please choose from UDP or TCP')    
     
     def __on_release(self, key):
         if key == Key.esc:

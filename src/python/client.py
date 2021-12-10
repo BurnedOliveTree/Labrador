@@ -35,10 +35,16 @@ class Client(Host):
         else:
             raise ValueError(f'invalid protocol type: {self.protocol} please choose from UDP or TCP')
 
+    def __input(self, msg: str):
+        try:
+            return input(msg)
+        except KeyboardInterrupt:
+            return None
+
     def __get_user_data(self) -> str:
         if self.send_type_is_struct:
-            return input("Press Enter to send struct or type 'QUIT': ")
-        data = input("Data: ")
+            return self.__input("Press Enter to send struct or type 'QUIT': ")
+        data = self.__input("Data: ")
         if data == "":
             return self.__get_long_text()
         return data
@@ -50,7 +56,7 @@ class Client(Host):
         return text
 
     def __get_input_type(self) -> bool:
-        input_type = input("Choose type of sending data: \n 1.string\n 2.struct\nYour choice: ")
+        input_type = self.__input("Choose type of sending data: \n 1.string\n 2.struct\nYour choice: ")
         try:
             option = int(input_type)
             if option == 2:
