@@ -65,9 +65,7 @@ class SocketInterface:
         self.socket.disconnect()
     
     def __enter__(self):
-        if self.connect() == False:
-            self.disconnect()
-            return None
+        self.connect()
         return self
     
     def __exit__(self, exc_type, exc_value, traceback) -> None:

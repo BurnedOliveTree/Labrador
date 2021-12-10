@@ -15,18 +15,15 @@ class Server(Host):
         signal.signal(signal.SIGINT, self.__on_sig_int)
 
     def listen(self) -> None:
-        data = None
         print("Listening on ", self.host, ":", self.port)
         socket = self.__get_socket()
         with SocketInterface(socket) as self.socket:
             if self.socket is not None:
-                # self.socket.connect() # to add another socket to poll
+                self.__connect()
                 while not self.is_quit_sent:
                     for answer in self.socket.read():
                         data, id, is_struct = answer
-                        if id is not None:
-                            print(f"Receiving data from ID: {id}")
-                        print(f"Received data: {data}")
+                        print(f"Received data (ID: {id}): {data}")
                         if data == 'QUIT':
                             self.is_quit_sent = True
                             continue
@@ -37,6 +34,13 @@ class Server(Host):
                 print("Connecting failed, exiting now...")
         self.socket = None
         print('Server finished')
+    
+    def __connect(self):
+        Thread(target=self.__do_connect, daemon=True).start()
+
+    def __do_connect(self) -> None:
+        while not self.is_quit_sent:
+            self.socket.connect()
     
     def __get_socket(self):
         if self.protocol == 'UDP':

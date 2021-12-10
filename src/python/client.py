@@ -18,8 +18,8 @@ class Client(Host):
                 data = self.__get_user_data()
                 while data != "QUIT":
                     socket.send(data, is_struct=self.send_type_is_struct)
-                    # received_data = socket.read()
-                    # print('Received data: ', repr(received_data))
+                    received_data = socket.read()
+                    print('Received data: ', repr(received_data))
                     data = self.__get_user_data()
                 else:
                     socket.send(data)
