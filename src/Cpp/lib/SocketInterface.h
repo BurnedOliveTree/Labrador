@@ -12,4 +12,5 @@ class SocketInterface{
 public:
     virtual void Send(std::vector<char> msg) = 0;
     virtual std::vector<char> Receive() = 0;
+    virtual std::vector<std::vector<char>> Poll() = 0;
 };

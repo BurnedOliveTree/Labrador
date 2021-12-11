@@ -15,12 +15,26 @@ Socket::Socket(std::string ip, int port, bool is_serv,bool is_UDP){
         }
         if(is_UDP){
             sock = socket( AF_INET, SOCK_DGRAM, 0 );
+            if(( sock ) < 0 )
+            {
+                throw std::runtime_error("Socket wasn't created");
+            }
         } else {
             sock = socket( AF_INET, SOCK_STREAM, 0 );
-        }
-        if(( sock ) < 0 )
-        {
-            throw std::runtime_error("Socket wasn't created");
+            if(( sock ) < 0 )
+            {
+                throw std::runtime_error("Socket wasn't created");
+            }
+            if(is_serv){
+                if( setsockopt(sock, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on))<0)
+                {
+                    throw std::runtime_error("Socket didn't allow to be reusable");
+                }
+                if (ioctl(sock, FIONBIO, (char *)&on) < 0)
+                {
+                    throw std::runtime_error("Socket didn't allow to nonblocking");
+                }
+            }
         }
         socket_len = sizeof(desc_4);
         self_addr = (struct sockaddr*) &desc_4;
@@ -77,11 +91,52 @@ void Socket::Connect(){
 }
 
 void Socket::Listen(){
-    listen(sock, 2);
-    msgsock = accept(sock,(struct sockaddr *) 0,(socklen_t *) 0); 
+    listen(sock, 32);
+    memset(fds, 0 , sizeof(fds));
+    fds[0].fd = sock;
+    fds[0].events = POLLIN;
+    timeout = (3 * 60 * 1000);
+    // msgsock = accept(sock,(struct sockaddr *) 0,(socklen_t *) 0); 
 }
 
-std::vector<char> Socket::Read(size_t n_bytes){
+// std::vector<std::vector<char>> Socket::Poll(){
+//     std::cout << "Waiting on Poll... \n";
+//     int rc = poll(fds, nfds, timeout);
+//     if(rc < 0){
+//         throw std::runtime_error("Poll error");
+//     }
+//     if(rc == 0){
+//         throw std::runtime_error("Timeout error");
+//     }
+//     current_size = nfds;
+//     for (int i = 0; i < current_size; i++)
+//     {
+//         if(fds[i].revents == 0){
+//             continue;
+//             }
+//         if(fds[i].revents != POLLIN)
+//         {
+//             throw std::runtime_error("One of poll sockets is bad.");
+//         }
+//         if (fds[i].fd == sock)
+//         {
+//             do
+//             {
+//             msgsock = accept(sock, NULL, NULL);
+//             if (msgsock < 0)
+//             {
+//                 throw std::runtime_error("Newly socket cant be add");
+//             }
+//             std::cout << "  New incoming connection "<< msgsock << std::endl;
+//             fds[nfds].fd = msgsock;
+//             fds[nfds].events = POLLIN;
+//             nfds++;
+//             } while (msgsock != -1);
+//         }
+//     }
+// }
+
+std::vector<char> Socket::Read(size_t n_bytes, int which_socket){
     std::vector<char> buffer(MAX_PACKET_SIZE);
     int rval = 0, rall = 0;
     if (msgsock < 0) {

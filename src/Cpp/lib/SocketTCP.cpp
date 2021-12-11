@@ -35,3 +35,9 @@ std::vector<char> SocketTCP::Receive(){
     // PacketHeader ph = Utils::deserializeStruct<PacketHeader>(sock.Read(sizeof(PacketHeader)));
     // return sock.Read(ntohs(ph.length));
 }
+
+std::vector<std::vector<char>> SocketTCP::Poll(){
+    std::vector<std::vector<char>> result;
+    result.push_back(Receive());
+    return result;
+}
