@@ -113,7 +113,13 @@ std::vector<char> SocketTCP::ReceiveEcho(int which_one){
         }
         ph = Utils::deserializeStruct<PacketHeader>(hd);
         std::vector<char> msg = sock.Read(ntohs(ph.length), which_one);
+        SendSpecific(Utils::addHeader(hd, msg), which_one);
         result.insert(result.end(), msg.begin(), msg.end());
     } while(ph.max_packet-ph.curr_packet>1);
     return result;
+}
+
+void SocketTCP::SendSpecific(std::vector<char> msg, int which_one)
+{
+    sock.Write(msg, which_one);
 }

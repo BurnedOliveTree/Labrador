@@ -4,6 +4,15 @@
 #include <iostream>
 #include <vector>
 
+void printVariant(std::variant<std::string, SimpleStruct> msg){
+    if(std::get_if<std::string>(&msg)){ 
+        std::cout << "Received string message: " << std::get<std::string>(msg) << std::endl;
+    }
+    if(std::get_if<SimpleStruct>(&msg)){ 
+        std::cout << "Received struct message: " << std::get<SimpleStruct>(msg).a << " " << unsigned(std::get<SimpleStruct>(msg).b) << " " << unsigned(std::get<SimpleStruct>(msg).c) << std::endl;
+    }
+}
+
 int main(int argc, char* argv[])
 // zad1
 { 
@@ -31,17 +40,26 @@ int main(int argc, char* argv[])
     }
     try{
         cl1->Send(messages1[0]);
+        printVariant(cl1->Receive());
         cl1->Send(messages1[1]);
+        printVariant(cl1->Receive());
         cl2->Send(messages2[0]);
+        printVariant(cl2->Receive());
         cl1->Send(messages1[2]);
+        printVariant(cl1->Receive());
         cl1->Send(messages1[3]);
+        printVariant(cl1->Receive());
         cl2->Send(messages2[1]);
+        printVariant(cl2->Receive());
         cl1->Send(messages1[4]);
+        printVariant(cl1->Receive());
         cl1->Send(messages1[5]);
+        printVariant(cl1->Receive());
 
     } catch (const std::exception& e){
     std::cout << e.what() << std::endl;
     }
+
     delete cl1, cl2;
     delete sockstring, sockstruct;
 }

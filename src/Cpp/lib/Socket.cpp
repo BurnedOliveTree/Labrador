@@ -97,19 +97,25 @@ void Socket::Listen(){
     listen(sock, 32);
     memset(fds, 0 , sizeof(fds));
     fds[0].fd = sock;
-    // std::cout << "Sock: " << std::to_string(sock) << "   Poll: " << std::to_string(fds[which_socket].fd)<< std::endl;
+    // std::cout << "Sock: " << std::to_string(sock) << "   Poll: " << std::to_string(fds[0].fd)<< std::endl;
     fds[0].events = POLLIN;
     timeout = (3 * 60 * 1000);
 }
 
 std::vector<char> Socket::Read(size_t n_bytes, int which_socket){
     std::vector<char> buffer(MAX_PACKET_SIZE);
+    int sock_dsc;
+    if(is_server){
+        sock_dsc = fds[which_socket].fd;
+    } else {
+        sock_dsc = sock;
+    }
     int rval = 0, rall = 0;
     if (fds[which_socket].fd < 0) {
         throw std::runtime_error("Couldn't accept connection");
     }
     do {
-        if ((rval =recv(fds[which_socket].fd,buffer.data()+rall, n_bytes-rall, 0)) == -1) {
+        if ((rval =recv(sock_dsc,buffer.data()+rall, n_bytes-rall, 0)) == -1) {
             throw std::runtime_error("Error while reading stream");
         }
         rall += rval;
@@ -120,13 +126,17 @@ std::vector<char> Socket::Read(size_t n_bytes, int which_socket){
 }
 
 void Socket::Write(std::vector<char> msg, int which_socket){
-    struct sockaddr* dst;
-    socklen_t dst_len;
+    int sock_dsc;
+    if(is_server){
+        sock_dsc = fds[which_socket].fd;
+    } else {
+        sock_dsc = sock;
+    }
     int sall = 0, sval = 0;
     int bsize = msg.size();
     // std::cout << "Sock: " << std::to_string(sock) << "   Poll: " << std::to_string(fds[which_socket].fd)<< std::endl; 
     do{
-        if((sval = send(sock, msg.data()+sall, bsize-sall, 0)) < 0){
+        if((sval = send(sock_dsc, msg.data()+sall, bsize-sall, 0)) < 0){
             throw std::runtime_error("Couldn't write message to stream");
         }
         sall += sval;
