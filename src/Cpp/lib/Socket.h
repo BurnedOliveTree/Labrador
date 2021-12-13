@@ -41,6 +41,6 @@ public:
     void Write(std::vector<char> msg);
     void Send(std::vector<char> msg);
     std::vector<char> Receive();
-    std::vector<char> Read(size_t n_bytes);
+    std::vector<char> Read(size_t n_bytes, int which_socket = 0);
 
 };

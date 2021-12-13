@@ -21,6 +21,7 @@ public:
     void Send(std::string msg);
     void Send(SimpleStruct msg);
 
+    std::vector<std::variant<std::string, SimpleStruct>> ReceiveAll();
     std::variant<std::string, SimpleStruct> Receive();
     SimpleStruct HandleStruct(std::vector<char> data);
     std::string HandleString(std::vector<char> data);

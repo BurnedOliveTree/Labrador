@@ -99,51 +99,14 @@ void Socket::Listen(){
     // msgsock = accept(sock,(struct sockaddr *) 0,(socklen_t *) 0); 
 }
 
-// std::vector<std::vector<char>> Socket::Poll(){
-//     std::cout << "Waiting on Poll... \n";
-//     int rc = poll(fds, nfds, timeout);
-//     if(rc < 0){
-//         throw std::runtime_error("Poll error");
-//     }
-//     if(rc == 0){
-//         throw std::runtime_error("Timeout error");
-//     }
-//     current_size = nfds;
-//     for (int i = 0; i < current_size; i++)
-//     {
-//         if(fds[i].revents == 0){
-//             continue;
-//             }
-//         if(fds[i].revents != POLLIN)
-//         {
-//             throw std::runtime_error("One of poll sockets is bad.");
-//         }
-//         if (fds[i].fd == sock)
-//         {
-//             do
-//             {
-//             msgsock = accept(sock, NULL, NULL);
-//             if (msgsock < 0)
-//             {
-//                 throw std::runtime_error("Newly socket cant be add");
-//             }
-//             std::cout << "  New incoming connection "<< msgsock << std::endl;
-//             fds[nfds].fd = msgsock;
-//             fds[nfds].events = POLLIN;
-//             nfds++;
-//             } while (msgsock != -1);
-//         }
-//     }
-// }
-
 std::vector<char> Socket::Read(size_t n_bytes, int which_socket){
     std::vector<char> buffer(MAX_PACKET_SIZE);
     int rval = 0, rall = 0;
-    if (msgsock < 0) {
+    if (fds[which_socket].fd < 0) {
         throw std::runtime_error("Couldn't accept connection");
     }
     do {
-        if ((rval = read(msgsock,buffer.data()+rall, n_bytes-rall)) == -1) {
+        if ((rval =recv(fds[which_socket].fd,buffer.data()+rall, n_bytes-rall, 0)) == -1) {
             throw std::runtime_error("Error while reading stream");
         }
         rall += rval;

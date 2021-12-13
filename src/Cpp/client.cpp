@@ -7,8 +7,8 @@
 int main(int argc, char* argv[])
 // zad1
 { 
-    // std::vector<std::string> messages{"abc1", "0001", "hello", "world", "QUIT", "Hmmm?"};
-    std::vector<SimpleStruct> messages{{300, 2,2}, {20, 1,50}}; 
+    std::vector<std::string> messages{"abc1", "0001", "hello", "world", "QUIT", "Hmmm?"};
+    // std::vector<SimpleStruct> messages{{300, 2,2}, {20, 1,50}}; 
     std::string ip = "127.0.0.1";
     int port = 2137;
     if(argc > 2){
@@ -25,8 +25,8 @@ int main(int argc, char* argv[])
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
     }
-    // for(std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
-    for(std::vector<SimpleStruct>::iterator it = messages.begin(); it != messages.end(); ++it) {
+    for(std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
+    // for(std::vector<SimpleStruct>::iterator it = messages.begin(); it != messages.end(); ++it) {
 
         try{
             cl->Send(*it);

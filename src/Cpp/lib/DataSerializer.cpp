@@ -29,6 +29,28 @@ std::variant<std::string, SimpleStruct> DataSerializer::Receive(){
     }
 }
 
+std::vector<std::variant<std::string, SimpleStruct>> DataSerializer::ReceiveAll(){
+    std::vector<std::variant<std::string, SimpleStruct>> result;
+    std::vector<std::vector<char>> incoming = si->ReceiveAll();
+    for(int i = 0; i < incoming.size(); i++){
+        auto [header, msg] = Utils::divideHeader(1, incoming[i]);
+        TypeHeader th = Utils::deserializeStruct<TypeHeader>(header);
+        switch (th.type)
+        {
+        case 0:
+            result.push_back(HandleString(msg));
+            break;
+        case 1:
+            result.push_back(HandleStruct(msg));
+            break;
+        default:
+            result.push_back(std::string("Error: type of message unknown"));
+            break;
+        }
+    }
+    return result;
+}
+
 SimpleStruct DataSerializer::HandleStruct(std::vector<char> data){
     SimpleStruct msg =  Utils::deserializeStruct<SimpleStruct>(data);
     msg.a = ntohs(msg.a);

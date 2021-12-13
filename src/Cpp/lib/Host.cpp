@@ -16,3 +16,7 @@ void Host::Send(std::variant<std::string, SimpleStruct> msg){
 std::variant<std::string, SimpleStruct> Host::Receive(){
     return ws.Receive();
 }
+
+std::vector<std::variant<std::string, SimpleStruct>> Host::ReceiveAll(){
+    return ws.ReceiveAll();
+}

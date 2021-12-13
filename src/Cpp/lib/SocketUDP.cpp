@@ -30,7 +30,7 @@ std::vector<char> SocketUDP::Receive(){
     return result;
 }
 
-std::vector<std::vector<char>> SocketUDP::Poll(){
+std::vector<std::vector<char>> SocketUDP::ReceiveAll(){
     std::vector<std::vector<char>> result;
     result.push_back(Receive());
     return result;
