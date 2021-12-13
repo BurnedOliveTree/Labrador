@@ -1,5 +1,4 @@
 #include "SocketTCP.h"
-#include <fcntl.h>
 
 SocketTCP::SocketTCP(std::string ip, int port,  bool is_serv): sock(ip,port,is_serv,false){
     if(is_serv){
@@ -39,6 +38,7 @@ std::vector<char> SocketTCP::Receive(){
 }
 
 std::vector<std::vector<char>> SocketTCP::ReceiveAll(){
+    bool compress = false;
     std::vector<std::vector<char>> result;
     std::cout << "Waiting on Poll... \n";
     int rc = poll(sock.fds, sock.nfds, sock.timeout);
@@ -73,28 +73,46 @@ std::vector<std::vector<char>> SocketTCP::ReceiveAll(){
             } while(sock.msgsock != -1);
         } else {
             if (sock.fds[i].fd >= 0){
-                // if(fcntl(sock.fds[i].fd, F_GETFL) & O_NONBLOCK) {
-                // // socket is non-blocking
-                // }
-                std::cout << "Reading from "<< sock.fds[i].fd << std::endl;
-                std::vector<char> m = ReceiveSpecific(i);
-                result.push_back(m);
+                std::vector<char> m = ReceiveEcho(i);
+                if(!m.empty()){
+                    std::cout << "Reading from: "<< sock.fds[i].fd << std::endl;
+                    result.push_back(m);
+                }
+                else{
+                    std::cout << "Closed connection with: "<< sock.fds[i].fd << std::endl;
+                    close(sock.fds[i].fd);
+                    sock.fds[i].fd = -1;
+                }
             }
         }
     }
-    // result.push_back(Receive());
+    if(compress){
+        for (int i = 0; i < sock.nfds; i++)
+        {
+            if (sock.fds[i].fd == -1)
+            {
+            for(int j = i; j < sock.nfds-1; j++)
+            {
+                sock.fds[j].fd = sock.fds[j+1].fd;
+            }
+            i--;
+            sock.nfds--;
+            }
+        }
+    }
     return result;
 }
 
-std::vector<char> SocketTCP::ReceiveSpecific(int which_one){
+std::vector<char> SocketTCP::ReceiveEcho(int which_one){
     std::vector<char> result, rec;
     PacketHeader ph;
     do{
         std::vector<char> hd = sock.Read(4, which_one);
-        Utils::printVector(hd);
+        if(hd.empty()){
+            return result;
+        }
         ph = Utils::deserializeStruct<PacketHeader>(hd);
         std::vector<char> msg = sock.Read(ntohs(ph.length), which_one);
-        Utils::printVector(msg);
         result.insert(result.end(), msg.begin(), msg.end());
     } while(ph.max_packet-ph.curr_packet>1);
     return result;

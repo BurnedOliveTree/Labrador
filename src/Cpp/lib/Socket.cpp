@@ -63,8 +63,11 @@ Socket::Socket(std::string ip, int port, bool is_serv,bool is_UDP){
 }
 
 Socket::~Socket(){
-    shutdown(sock, SHUT_RDWR);
-    shutdown(msgsock, SHUT_RDWR);
+    for (int i = 0; i < nfds; i++)
+    {
+        if(fds[i].fd >= 0)
+        close(fds[i].fd);
+    }
 }
 
 void Socket::Bind(){
@@ -94,9 +97,9 @@ void Socket::Listen(){
     listen(sock, 32);
     memset(fds, 0 , sizeof(fds));
     fds[0].fd = sock;
+    // std::cout << "Sock: " << std::to_string(sock) << "   Poll: " << std::to_string(fds[which_socket].fd)<< std::endl;
     fds[0].events = POLLIN;
     timeout = (3 * 60 * 1000);
-    // msgsock = accept(sock,(struct sockaddr *) 0,(socklen_t *) 0); 
 }
 
 std::vector<char> Socket::Read(size_t n_bytes, int which_socket){
@@ -111,16 +114,17 @@ std::vector<char> Socket::Read(size_t n_bytes, int which_socket){
         }
         rall += rval;
 
-    } while (n_bytes-rall>0);
+    } while (n_bytes-rall>0 && rall!=0);
     buffer.resize(rall);
     return buffer;
 }
 
-void Socket::Write(std::vector<char> msg){
+void Socket::Write(std::vector<char> msg, int which_socket){
     struct sockaddr* dst;
     socklen_t dst_len;
     int sall = 0, sval = 0;
     int bsize = msg.size();
+    // std::cout << "Sock: " << std::to_string(sock) << "   Poll: " << std::to_string(fds[which_socket].fd)<< std::endl; 
     do{
         if((sval = send(sock, msg.data()+sall, bsize-sall, 0)) < 0){
             throw std::runtime_error("Couldn't write message to stream");

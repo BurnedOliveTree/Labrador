@@ -7,8 +7,8 @@
 int main(int argc, char* argv[])
 // zad1
 { 
-    std::vector<std::string> messages{"abc1", "0001", "hello", "world", "QUIT", "Hmmm?"};
-    // std::vector<SimpleStruct> messages{{300, 2,2}, {20, 1,50}}; 
+    std::vector<std::string> messages1{"abc1", "0001", "hello", "world", "QUIT", "Hmmm?"};
+    std::vector<SimpleStruct> messages2{{300, 2,2}, {20, 1,50}}; 
     std::string ip = "127.0.0.1";
     int port = 2137;
     if(argc > 2){
@@ -16,26 +16,34 @@ int main(int argc, char* argv[])
         port = atoi(argv[2]);
     }
     std::cout << ip << " " << port << std::endl;
-    SocketInterface* sockint;
-    Host* cl;
+    SocketInterface* sockstring; 
+    SocketInterface* sockstruct;
+    Host* cl1;
+    Host* cl2;
     try{
         // sockint = new SocketUDP(ip, port, false);
-        sockint = new SocketTCP(ip, port, false);
-        cl = new Host(sockint);
+        sockstring = new SocketTCP(ip, port, false);
+        sockstruct = new SocketTCP(ip, port, false);
+        cl1 = new Host(sockstring);
+        cl2 = new Host(sockstruct);
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
     }
-    for(std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
-    // for(std::vector<SimpleStruct>::iterator it = messages.begin(); it != messages.end(); ++it) {
+    try{
+        cl1->Send(messages1[0]);
+        cl1->Send(messages1[1]);
+        cl2->Send(messages2[0]);
+        cl1->Send(messages1[2]);
+        cl1->Send(messages1[3]);
+        cl2->Send(messages2[1]);
+        cl1->Send(messages1[4]);
+        cl1->Send(messages1[5]);
 
-        try{
-            cl->Send(*it);
-            } catch (const std::exception& e){
-            std::cout << e.what() << std::endl;
-            }
+    } catch (const std::exception& e){
+    std::cout << e.what() << std::endl;
     }
-    delete cl;
-    delete sockint;
+    delete cl1, cl2;
+    delete sockstring, sockstruct;
 }
 
 // int main(int argc, char* argv[])

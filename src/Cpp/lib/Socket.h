@@ -38,7 +38,7 @@ public:
     void Bind();
     void Connect();
     void Listen();
-    void Write(std::vector<char> msg);
+    void Write(std::vector<char> msg, int which_socket = 0);
     void Send(std::vector<char> msg);
     std::vector<char> Receive();
     std::vector<char> Read(size_t n_bytes, int which_socket = 0);
