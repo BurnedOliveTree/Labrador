@@ -1,16 +1,22 @@
-import struct, io
+from io import BytesIO
+from lib.Socket import Socket
+from struct import pack, unpack
+
+from lib.RawSocket import RawSocket
 
 class SocketInterface:
-    def __init__(self, socket):
+    def __init__(self, socket: Socket):
         self.binary_stream = None
         self.socket = socket
     
-    def read(self, ret_address: bool = False) -> str or tuple:
-        data, address = self.socket.read()
+    def read(self, ret_address: bool = False, socket: RawSocket = None) -> str or tuple:
+        if not socket:
+            socket = self.socket
+        data, address = socket.read()
         if data:
             if data[0] == 1:
                 is_struct = True
-                decoded_data = struct.unpack('!HBB', data[1:])  # TODO this needs to not be hardcoded
+                decoded_data = unpack('!HBB', data[1:])  # TODO this needs to not be hardcoded
             else:
                 is_struct = False
                 decoded_data = self.decode(data[1:])
@@ -20,20 +26,22 @@ class SocketInterface:
                 return decoded_data
         raise ValueError('Data not received')
 
-    def send(self, data: str, address: str = None, is_struct = False) -> None:
+    def send(self, data: str, address: str = None, is_struct = False, socket: RawSocket = None) -> None:
+        if not socket:
+            socket = self.socket
         if is_struct:
-            encoded_data = b'\1' + struct.pack('!HBB', 1, 2, 3)  # TODO this needs to not be hardcoded
+            encoded_data = b'\1' + pack('!HBB', 1, 2, 3)  # TODO this needs to not be hardcoded
         else:
             encoded_data = b'\0' + self.encode(data)
-        self.__write_to_binary_stream(encoded_data)
+        self.write_to_binary_stream(encoded_data)
         self.socket.send(self.binary_stream, address)
-        self.__clear_binary_stream()
+        self.clear_binary_stream()
     
-    def __clear_binary_stream(self) -> None:
+    def clear_binary_stream(self) -> None:
         self.binary_stream.seek(0)
         self.binary_stream.truncate(0)
     
-    def __write_to_binary_stream(self, data: bytes) -> None:
+    def write_to_binary_stream(self, data: bytes) -> None:
         self.binary_stream.write(data)
         self.binary_stream.seek(0)
 
@@ -48,7 +56,8 @@ class SocketInterface:
         return ""
 
     def connect(self) -> None or bool:
-        self.binary_stream = io.BytesIO()
+        if not self.binary_stream:
+            self.binary_stream = BytesIO()
         return self.socket.connect()
 
     def disconnect(self) -> None:
@@ -56,10 +65,7 @@ class SocketInterface:
         self.socket.disconnect()
     
     def __enter__(self):
-        succeeded_bind = self.connect()
-        if succeeded_bind == False:
-            self.disconnect()
-            return None
+        self.connect()
         return self
     
     def __exit__(self, exc_type, exc_value, traceback) -> None:

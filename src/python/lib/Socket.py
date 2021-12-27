@@ -12,29 +12,9 @@ class Socket:
         self.header_types = '!HBB'  
 
     def read(self):
-        address = None
-        amount, current_amount = 1, 0
-        data_map: dict = {}
-        while current_amount < amount:
-            received_data = self.socket.receive_from()
-            if received_data is False:
-                if len(data_map) > 0:
-                    current_amount += 1
-                else:
-                    amount, current_amount = 1, 0
-                continue
-            else:
-                (datagram, address) = received_data
-            if address is not None:
-                self.client_adress = address
-            data, _, amount, number = self.split_read_data(datagram)
-            data_map[number] = data
-            current_amount += 1
-        data = b''.join(val for (_, val) in data_map.items())
-        return data, self.client_adress
-
+        raise NotImplementedError("This method is an interface and shouldn't be called directly")
     
-    def split_read_data(self, datagram: bytes):
+    def _split_read_data(self, datagram: bytes):
         header = datagram[:struct.calcsize(self.header_types)]
         size, amount, number = struct.unpack(self.header_types, header)
         return datagram[struct.calcsize(self.header_types):], size, amount, number
@@ -43,7 +23,7 @@ class Socket:
         datagram_number = 0
         if address is None:
             address = (self.host, self.port)
-        data = self.__split_send_data(binary_stream.read())
+        data = self._split_send_data(binary_stream.read(), self.socket.buffer_size)
         for datagram in data:
             self.socket.sendto(datagram, address)
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
@@ -56,9 +36,9 @@ class Socket:
         datagram.extend(raw_data[data_range[0]:data_range[1]])
         return bytes(datagram)
     
-    def split_send_data(self, raw_data: bytes) -> str:
+    def _split_send_data(self, raw_data: bytes, buffer_size: int) -> str:
         data = []
-        max_size = min(self.socket.buffer_size + 1, self.packet_size) - struct.calcsize(self.header_types)
+        max_size = min(buffer_size + 1, self.packet_size) - struct.calcsize(self.header_types)
         datagram_amount = len(raw_data) // max_size + (1 if len(raw_data) % max_size != 0 else 0)
         if datagram_amount >= 256 ** struct.calcsize(self.header_types[2]):
             raise ValueError("Given data was too big, resulting in too many datagrams")
@@ -67,21 +47,16 @@ class Socket:
         data.append(self.__create_datagram(raw_data, datagram_amount, datagram_amount - 1, ((datagram_amount - 1) * max_size, None)))
         return data
     
-    def __enter__(self):
-        self.socket.connect()
-        return self
-    
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
-        self.socket.disconnect()
+    def connect(self):
+        raise NotImplementedError("This method is an interface and shouldn't be called directly")
     
     def disconnect(self):
-        self.socket.disconnect()
+        if self.socket:
+            self.socket.disconnect()
 
     def __enter__(self):
-        if self.socket:
-            self.socket.connect()
+        self.connect()
         return self
     
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        if self.socket:
-            self.socket.disconnect()
+        self.disconnect()
