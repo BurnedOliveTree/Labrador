@@ -8,7 +8,7 @@ class SocketTCP(Socket):
         data_map: dict = {}
         while current_amount < amount:
             header = self.socket.receive(calcsize(self.header_types))
-            if header == b'':
+            if header is False:
                 if len(data_map) > 0:
                     current_amount += 1
                 else:

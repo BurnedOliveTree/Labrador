@@ -1,29 +1,23 @@
 #include "lib/SocketUDP.h"
 #include "lib/SocketTCP.h"
-#include "lib/Host.h"
-#include "lib/Utils.h"
+#include "lib/Server.h"
 #include <iostream>
 #include <vector>
 #include "lib/Exit.h"
 #include <thread>
 #include <pthread.h>
 
-void listener(Host* serv){
-    std::variant<std::string, SimpleStruct> msg;
-    int how_many_msgs = 5;
-    while(true){
+void listener(Server* serv){
+    std::vector<char> vecmsg;
+    std::string msg;
+    while (true){
         try{
-            msg = serv->Receive();
+            vecmsg  = serv->Receive();
+            msg = std::string(vecmsg.begin(), vecmsg.end());
         } catch (const std::exception& e){
-            std::cout << e.what() << std::endl;
+        std::cout << e.what() << std::endl;
         }
-
-        if(std::get_if<std::string>(&msg)){ 
-            std::cout << "Received string message: " << std::get<std::string>(msg) << std::endl;
-        }
-        if(std::get_if<SimpleStruct>(&msg)){ 
-            std::cout << "Received struct message: " << std::get<SimpleStruct>(msg).a << " " << unsigned(std::get<SimpleStruct>(msg).b) << " " << unsigned(std::get<SimpleStruct>(msg).c) << std::endl;
-        }
+        std::cout << "Received message: " << msg << std::endl;
     }
 }
 
@@ -36,11 +30,11 @@ int main(int argc, char* argv[])
         port = atoi(argv[2]);
     }
     SocketInterface* sockint;
-    Host* serv; 
+    Server* serv; 
     try{
         // sockint = new SocketUDP(ip, port, true);
         sockint = new SocketTCP(ip, port, true);
-        serv = new Host(sockint);
+        serv = new Server(sockint);
     } catch (const std::exception& e){
         std::cout << e.what() << std::endl;
     }
@@ -49,11 +43,7 @@ int main(int argc, char* argv[])
     std::thread listenerth(listener, serv);
     std::thread exitth(&Exit::exit, &e);
 
-    exitth.join();
-    listenerth.detach();
-
-    delete serv;
-    delete sockint;
-
+   exitth.join();
+   listenerth.detach();
 }
 

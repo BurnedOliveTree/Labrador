@@ -2,7 +2,6 @@
 
 Socket::Socket(std::string ip, int port, bool is_serv,bool is_UDP){
     is_server = is_serv;
-    is_datagram = is_UDP;
     socket_ip = ip;
     socket_port = port;
     if (std::string(ip).find('.') != std::string::npos){
@@ -77,22 +76,24 @@ void Socket::Connect(){
 
 void Socket::Listen(){
     listen(sock, 2);
-    msgsock = accept(sock,(struct sockaddr *) 0,(socklen_t *) 0); 
 }
 
-std::vector<char> Socket::Read(size_t n_bytes){
-    std::vector<char> buffer(MAX_PACKET_SIZE);
+std::vector<char> Socket::Read(){
+    msgsock = accept(sock,(struct sockaddr *) 0,(socklen_t *) 0); 
+    std::cout << "Accepted " << msgsock << std::endl;
+    std::vector<char> buffer(max_buffer_size);
     int rval = 0, rall = 0;
     if (msgsock < 0) {
         throw std::runtime_error("Couldn't accept connection");
     }
     do {
-        if ((rval = read(msgsock,buffer.data()+rall, n_bytes-rall)) == -1) {
+        if ((rval = recv(msgsock,buffer.data()+rall, 1024, 0)) == -1) {
             throw std::runtime_error("Error while reading stream");
         }
         rall += rval;
+        std::cout << "READ 1stCHar: "<< buffer.data()[0] << ", Rall " << rall << std::endl;
 
-    } while (n_bytes-rall>0);
+    } while (rval > 0);
     buffer.resize(rall);
     return buffer;
 }
@@ -100,14 +101,13 @@ std::vector<char> Socket::Read(size_t n_bytes){
 void Socket::Write(std::vector<char> msg){
     struct sockaddr* dst;
     socklen_t dst_len;
-    int sall = 0, sval = 0;
     int bsize = msg.size();
-    do{
-        if((sval = send(sock, msg.data()+sall, bsize-sall, 0)) < 0){
+    std::cout << "WRITE ROZMIAR: "<< bsize << std::endl;
+    std::cout << "WRITE 1stCHar: "<< msg.data()[0] << std::endl;
+    if(send(sock, msg.data(), bsize, 0) < 0)
+        {
             throw std::runtime_error("Couldn't write message to stream");
         }
-        sall += sval;
-    } while(bsize-sall>0);
 }
 
 void Socket::Send(std::vector<char> msg){
@@ -122,6 +122,8 @@ void Socket::Send(std::vector<char> msg){
         dst_len = socket_len;
     }
     int bsize = msg.size();
+    std::cout << "SEND ROZMIAR: "<< bsize << std::endl;
+    std::cout << "SEND 1stCHar: "<< msg.data()[0] << std::endl;
     if(sendto(sock, msg.data(), bsize, 0, dst, dst_len ) < 0)
         {
             throw std::runtime_error("Couldn't send message to server");
@@ -129,7 +131,7 @@ void Socket::Send(std::vector<char> msg){
 }
 
 std::vector<char> Socket::Receive(){
-    std::vector<char> buffer(MAX_PACKET_SIZE);
+    std::vector<char> buffer(max_buffer_size);
     struct sockaddr* dst;
     socklen_t* dst_len;
     if(is_server){
@@ -140,12 +142,12 @@ std::vector<char> Socket::Receive(){
         dst = self_addr;
         dst_len = &socket_len;
     }
-
     int result = recvfrom(sock, buffer.data(), buffer.size(), 0, dst, dst_len);
     if( result < 0 )
         {   
             throw std::runtime_error("Couldn't receive message from server");
         }
     buffer.resize(result);
+    std::cout << "RECEIVE 1stCHar: "<< buffer.data()[0] << std::endl;
     return buffer;
 }
