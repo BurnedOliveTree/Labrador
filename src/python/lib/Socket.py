@@ -9,7 +9,7 @@ class Socket:
         self.port: str = port
         self.packet_size = 7
         self.client_adress = None
-        self.header_types = '!HBB'  
+        self.header_types = '!IIQ'
 
     def read(self):
         address = None
@@ -43,7 +43,7 @@ class Socket:
         datagram_number = 0
         if address is None:
             address = (self.host, self.port)
-        data = self.__split_send_data(binary_stream.read())
+        data = self.split_send_data(binary_stream.read())
         for datagram in data:
             self.socket.sendto(datagram, address)
             logging.debug('Sending datagram #%s: %s', datagram_number, datagram)
@@ -52,8 +52,9 @@ class Socket:
     def __create_datagram(self, raw_data: bytes, amount: int, number: int, data_range: tuple):
         datagram: bytearray = bytearray(b'')
         size = (data_range[1] if data_range[1] else len(raw_data)) - data_range[0]
-        datagram.extend(struct.pack(self.header_types, size, amount, number))
+        datagram.extend(struct.pack(self.header_types, amount, number, size))
         datagram.extend(raw_data[data_range[0]:data_range[1]])
+        print(datagram)
         return bytes(datagram)
     
     def split_send_data(self, raw_data: bytes) -> str:

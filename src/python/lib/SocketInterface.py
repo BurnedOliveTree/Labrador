@@ -1,10 +1,11 @@
 import struct, io
 
+
 class SocketInterface:
     def __init__(self, socket):
         self.binary_stream = None
         self.socket = socket
-    
+
     def read(self, ret_address: bool = False) -> str or tuple:
         data, address = self.socket.read()
         if data:
@@ -20,19 +21,20 @@ class SocketInterface:
                 return decoded_data
         raise ValueError('Data not received')
 
-    def send(self, data: str, address: str = None, is_struct = False) -> None:
-        if is_struct:
-            encoded_data = b'\1' + struct.pack('!HBB', 1, 2, 3)  # TODO this needs to not be hardcoded
-        else:
-            encoded_data = b'\0' + self.encode(data)
+    def send(self, data: bytes, address: str = None, is_struct=False) -> None:
+        s = bytes("0123456789ABCDEF", 'utf-8')
+        type_file = 0
+        status_code = 0
+        id_file = 1
+        encoded_data = struct.pack('!HBB16s', id_file, type_file, status_code, s) + data  # TODO this needs to not be hardcoded
         self.__write_to_binary_stream(encoded_data)
         self.socket.send(self.binary_stream, address)
         self.__clear_binary_stream()
-    
+
     def __clear_binary_stream(self) -> None:
         self.binary_stream.seek(0)
         self.binary_stream.truncate(0)
-    
+
     def __write_to_binary_stream(self, data: bytes) -> None:
         self.binary_stream.write(data)
         self.binary_stream.seek(0)
@@ -54,14 +56,13 @@ class SocketInterface:
     def disconnect(self) -> None:
         self.binary_stream.close()
         self.socket.disconnect()
-    
+
     def __enter__(self):
         succeeded_bind = self.connect()
         if succeeded_bind == False:
             self.disconnect()
             return None
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.disconnect()
-

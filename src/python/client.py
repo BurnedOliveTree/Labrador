@@ -3,6 +3,7 @@ from lib.SocketInterface import SocketInterface
 from lib.TCP.ClientSocketTCP import ClientSocket as SocketTCP
 from lib.UDP.SocketUDP import SocketUDP as SocketUDP
 from lib.Host import Host, get_project_root
+import time
 
 class Client(Host):
     def __init__(self, argv: list):
@@ -18,9 +19,9 @@ class Client(Host):
             data = self.__get_user_data()
             while data != "QUIT":
                 socket.send(data, is_struct=self.send_type_is_struct)
-                # received_data = socket.read()
-                # print('Received data: ', repr(received_data))
-                data = self.__get_user_data()
+                time.sleep(1)
+                print('Received data: ', repr(received_data))
+                data = self.get_user_data()
             else:
                 socket.send(data)
         print('Client finished')

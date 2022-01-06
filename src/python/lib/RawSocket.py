@@ -2,7 +2,7 @@ import socket, logging
 
 class RawSocket:
     def __init__(self, ip_version = None, protocol = None, created_socket = None):
-        self.buffer_size = 65535 
+        self.buffer_size = 256
         self.socket: socket.socket = None
         self.default_timeout = 10
         if created_socket is not None: 
